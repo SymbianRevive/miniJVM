@@ -18,23 +18,28 @@ Sint16 g_eventButton = -1;
 static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
 
-  g_DX = 0;
-  g_DY = 0;
   g_eventButton = -1;
 
   SDL_Event ev;
   int res = SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_MOUSEEVENTMASK);
+  if (res < 0) {
+    printf("%s\n", SDL_GetError());
+    abort();
+  }
   if (!res) {
     push_int(stack, 0);
     return 0;
   }
 
+  g_DX = 0;
+  g_DY = 0;
+
   switch (ev.type) {
   case SDL_MOUSEMOTION:
     g_X = ev.motion.x;
     g_Y = ev.motion.y;
-    g_DX = ev.motion.xrel;
-    g_DY = ev.motion.yrel;
+    g_DX = ev.motion.xrel / 4;
+    g_DY = -ev.motion.yrel / 4;
     break;
   case SDL_MOUSEBUTTONDOWN:
     g_mouseStatus |= SDL_BUTTON(ev.button.button);
@@ -73,7 +78,7 @@ static s32 org_lwjgl_input_Mouse_getEventButtonState_Z0(Runtime *runtime,
   if (g_eventButton == -1) {
     push_int(runtime->stack, 0);
   } else {
-    push_int(runtime->stack, g_eventButton & SDL_BUTTON(g_eventButton));
+    push_int(runtime->stack, g_mouseStatus & SDL_BUTTON(g_eventButton));
   }
   return 0;
 }
@@ -90,6 +95,28 @@ static s32 org_lwjgl_input_Mouse_setGrabbed_V1(Runtime *runtime,
 // KEYBOARD
 // ------------------------
 
+static const short lwjgl2sdl[] = {
+    [KEY_BACK] = 8,         [KEY_ESCAPE] = 27,     [KEY_SPACE] = ' ',
+    [KEY_MULTIPLY] = '*',   [KEY_ADD] = '+',       [KEY_COMMA] = ',',
+    [KEY_MINUS] = '-',      [KEY_PERIOD] = '.',    [KEY_SLASH] = '/',
+    [KEY_0] = '0',          [KEY_1] = '1',         [KEY_2] = '2',
+    [KEY_3] = '3',          [KEY_4] = '4',         [KEY_5] = '5',
+    [KEY_6] = '6',          [KEY_7] = '7',         [KEY_8] = '8',
+    [KEY_9] = '9',          [KEY_COLON] = ':',     [KEY_SEMICOLON] = ';',
+    [KEY_EQUALS] = '=',     [KEY_AT] = '@',        [KEY_A] = SDLK_a,
+    [KEY_B] = SDLK_b,       [KEY_C] = SDLK_c,      [KEY_D] = SDLK_d,
+    [KEY_E] = SDLK_e,       [KEY_F] = SDLK_f,      [KEY_G] = SDLK_g,
+    [KEY_H] = SDLK_h,       [KEY_I] = SDLK_i,      [KEY_J] = SDLK_j,
+    [KEY_K] = SDLK_k,       [KEY_L] = SDLK_l,      [KEY_M] = SDLK_m,
+    [KEY_N] = SDLK_n,       [KEY_O] = SDLK_o,      [KEY_P] = SDLK_p,
+    [KEY_Q] = SDLK_q,       [KEY_R] = SDLK_r,      [KEY_S] = SDLK_s,
+    [KEY_T] = SDLK_t,       [KEY_U] = SDLK_u,      [KEY_V] = SDLK_v,
+    [KEY_W] = SDLK_w,       [KEY_X] = SDLK_x,      [KEY_Y] = SDLK_y,
+    [KEY_Z] = SDLK_z,       [KEY_LBRACKET] = '[',  [KEY_APOSTROPHE] = '\'',
+    [KEY_BACKSLASH] = '\\', [KEY_RETURN] = '\r',   [KEY_TAB] = '\t',
+    [KEY_RBRACKET] = ']',   [KEY_UNDERLINE] = '_', [KEY_GRAVE] = '`',
+    [KEY_DELETE] = 127,
+};
 static const short sdl2lwjgl[] = {
     [8] = KEY_BACK,         [27] = KEY_ESCAPE,     [' '] = KEY_SPACE,
     ['*'] = KEY_MULTIPLY,   ['+'] = KEY_ADD,       [','] = KEY_COMMA,
@@ -98,16 +125,16 @@ static const short sdl2lwjgl[] = {
     ['3'] = KEY_3,          ['4'] = KEY_4,         ['5'] = KEY_5,
     ['6'] = KEY_6,          ['7'] = KEY_7,         ['8'] = KEY_8,
     ['9'] = KEY_9,          [':'] = KEY_COLON,     [';'] = KEY_SEMICOLON,
-    ['='] = KEY_EQUALS,     ['@'] = KEY_AT,        ['a'] = KEY_A,
-    ['b'] = KEY_B,          ['c'] = KEY_C,         ['d'] = KEY_D,
-    ['e'] = KEY_E,          ['f'] = KEY_F,         ['g'] = KEY_G,
-    ['h'] = KEY_H,          ['i'] = KEY_I,         ['j'] = KEY_J,
-    ['k'] = KEY_K,          ['l'] = KEY_L,         ['m'] = KEY_M,
-    ['n'] = KEY_N,          ['o'] = KEY_O,         ['p'] = KEY_P,
-    ['q'] = KEY_Q,          ['r'] = KEY_R,         ['s'] = KEY_S,
-    ['t'] = KEY_T,          ['u'] = KEY_U,         ['v'] = KEY_V,
-    ['w'] = KEY_W,          ['x'] = KEY_X,         ['y'] = KEY_Y,
-    ['z'] = KEY_Z,          ['['] = KEY_LBRACKET,  ['\''] = KEY_APOSTROPHE,
+    ['='] = KEY_EQUALS,     ['@'] = KEY_AT,        [SDLK_a] = KEY_A,
+    [SDLK_b] = KEY_B,       [SDLK_c] = KEY_C,      [SDLK_d] = KEY_D,
+    [SDLK_e] = KEY_E,       [SDLK_f] = KEY_F,      [SDLK_g] = KEY_G,
+    [SDLK_h] = KEY_H,       [SDLK_i] = KEY_I,      [SDLK_j] = KEY_J,
+    [SDLK_k] = KEY_K,       [SDLK_l] = KEY_L,      [SDLK_m] = KEY_M,
+    [SDLK_n] = KEY_N,       [SDLK_o] = KEY_O,      [SDLK_p] = KEY_P,
+    [SDLK_q] = KEY_Q,       [SDLK_r] = KEY_R,      [SDLK_s] = KEY_S,
+    [SDLK_t] = KEY_T,       [SDLK_u] = KEY_U,      [SDLK_v] = KEY_V,
+    [SDLK_w] = KEY_W,       [SDLK_x] = KEY_X,      [SDLK_y] = KEY_Y,
+    [SDLK_z] = KEY_Z,       ['['] = KEY_LBRACKET,  ['\''] = KEY_APOSTROPHE,
     ['\\'] = KEY_BACKSLASH, ['\r'] = KEY_RETURN,   ['\t'] = KEY_TAB,
     [']'] = KEY_RBRACKET,   ['_'] = KEY_UNDERLINE, ['`'] = KEY_GRAVE,
     [127] = KEY_DELETE,
@@ -132,8 +159,8 @@ static s32 org_lwjgl_input_Keyboard_next_Z0(Runtime *runtime, JClass *clazz) {
   switch (ev.type) {
   case SDL_KEYDOWN:
   case SDL_KEYUP:
-    SPARSE_TOGGLE(g_sparseKeyStatusMap, ev.key.type);
     g_eventKey = ev.key.keysym.sym;
+    SPARSE_TOGGLE(g_sparseKeyStatusMap, g_eventKey);
     break;
   }
 
@@ -163,7 +190,7 @@ static s32 org_lwjgl_input_Keyboard_getEventCharacter_C0(Runtime *runtime,
     push_int(runtime->stack, 0);
     return 0;
   }
-  push_int(runtime->stack, g_eventKey);
+  push_int(runtime->stack, tolower(g_eventKey));
   return 0;
 }
 
@@ -173,14 +200,15 @@ static s32 org_lwjgl_input_Keyboard_getEventKeyState_Z0(Runtime *runtime,
     push_int(runtime->stack, -1);
     return 0;
   }
-  push_int(runtime->stack, SPARSE_GET(g_sparseKeyStatusMap, g_eventKey));
+  push_int(runtime->stack,
+           SPARSE_GET(g_sparseKeyStatusMap, lwjgl2sdl[g_eventKey]));
   return 0;
 }
 
 static s32 org_lwjgl_input_Keyboard_isKeyDown_Z1(Runtime *runtime,
                                                  JClass *clazz) {
   push_int(runtime->stack, SPARSE_GET(g_sparseKeyStatusMap,
-                                      localvar_getInt(runtime->localvar, 0)));
+                                      lwjgl2sdl[localvar_getInt(runtime->localvar, 0)]));
   return 0;
 }
 
@@ -213,7 +241,9 @@ static s32 org_lwjgl_input_Display_update_V0(Runtime *runtime, JClass *clazz) {
                         ~(SDL_KEYEVENTMASK | SDL_MOUSEEVENTMASK))) {
     if (ev.type == SDL_QUIT) {
       push_int(runtime->stack, 0);
-      execute_method(find_methodInfo_by_name_c("java.lang.System", "exit", "(I)V", NULL, runtime), runtime);
+      execute_method(find_methodInfo_by_name_c("java.lang.System", "exit",
+                                               "(I)V", NULL, runtime),
+                     runtime);
       return 0;
     }
   }
