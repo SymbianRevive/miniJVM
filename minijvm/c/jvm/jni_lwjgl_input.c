@@ -4,7 +4,6 @@
 
 int g_Down = 0;
 int g_X = -1, g_Y = -1;
-int g_XL = -1, g_YL = -1;
 int g_mouseGrabbed = 0;
 SDL_Event ev;
 
@@ -16,7 +15,7 @@ static s32 org_lwjgl_input_Mouse_getDX_I0(Runtime *runtime, JClass *clazz) {
 }
 
 static s32 org_lwjgl_input_Mouse_getDY_I0(Runtime *runtime, JClass *clazz) {
-  push_int(runtime->stack, -g_Y);
+  push_int(runtime->stack, g_Y);
   g_Y = 0;
   return 0;
 }
@@ -41,13 +40,10 @@ static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
   
   int res = SDL_PollEvent(&ev);
   push_int(stack, res);
-  g_XL = g_X;
-  g_YL = g_Y;
 
   if(ev.type == SDL_MOUSEMOTION) {
-    g_X = ev.motion.xrel - g_XL;
-    g_Y = ev.motion.yrel - g_YL;
-    // printf("%d %d\n", g_X, g_Y);
+    g_X = ev.motion.xrel;
+    g_Y = ev.motion.yrel;
   }
   if(ev.type == SDL_QUIT) {
     SDL_Quit();
