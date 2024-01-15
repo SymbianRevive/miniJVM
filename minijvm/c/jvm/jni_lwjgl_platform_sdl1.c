@@ -15,6 +15,15 @@ Uint16 g_X = 0, g_Y = 0;
 int g_mouseStatus;
 Sint16 g_eventButton = -1;
 
+static const short lwjgl2sdlb[] = {
+    [0] = SDL_BUTTON_LEFT, [1] = SDL_BUTTON_RIGHT, [2] = SDL_BUTTON_MIDDLE,
+    [3] = SDL_BUTTON_X1,   [4] = SDL_BUTTON_X2,
+};
+static const short sdl2lwjglb[] = {
+    [SDL_BUTTON_LEFT] = 0, [SDL_BUTTON_RIGHT] = 1, [SDL_BUTTON_MIDDLE] = 2,
+    [SDL_BUTTON_X1] = 3,   [SDL_BUTTON_X2] = 4,
+};
+
 static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
 
@@ -69,7 +78,7 @@ static s32 org_lwjgl_input_Mouse_getDY_I0(Runtime *runtime, JClass *clazz) {
 
 static s32 org_lwjgl_input_Mouse_getEventButton_I0(Runtime *runtime,
                                                    JClass *clazz) {
-  push_int(runtime->stack, g_eventButton);
+  push_int(runtime->stack, sdl2lwjglb[g_eventButton]);
   return 0;
 }
 
@@ -207,8 +216,9 @@ static s32 org_lwjgl_input_Keyboard_getEventKeyState_Z0(Runtime *runtime,
 
 static s32 org_lwjgl_input_Keyboard_isKeyDown_Z1(Runtime *runtime,
                                                  JClass *clazz) {
-  push_int(runtime->stack, SPARSE_GET(g_sparseKeyStatusMap,
-                                      lwjgl2sdl[localvar_getInt(runtime->localvar, 0)]));
+  push_int(runtime->stack,
+           SPARSE_GET(g_sparseKeyStatusMap,
+                      lwjgl2sdl[localvar_getInt(runtime->localvar, 0)]));
   return 0;
 }
 
