@@ -544,6 +544,14 @@ s32 org_lwjgl_opengl_GL11_glVertex3f_V3(Runtime *runtime, JClass *clazz) {
   return 0;
 }
 
+s32 org_lwjgl_opengl_GL11_glVertex2f_V2(Runtime *runtime, JClass *clazz) {
+  RuntimeStack *stack = runtime->stack;
+  Int2Float arg1 = {.i = localvar_getInt(runtime->localvar, 0)};
+  Int2Float arg2 = {.i = localvar_getInt(runtime->localvar, 1)};
+  glVertex2f(arg1.f, arg2.f);
+  return 0;
+}
+
 s32 org_lwjgl_opengl_GL11_glNormalPointer_V2(Runtime *runtime, JClass *clazz) {
   s32 a1 = localvar_getInt(runtime->localvar, 0);
   Instance *buffer = localvar_getRefer(runtime->localvar, 1);
@@ -557,6 +565,22 @@ s32 org_lwjgl_opengl_GL11_glNormalPointer_V2(Runtime *runtime, JClass *clazz) {
 s32 org_lwjgl_opengl_GL11_glCullFaceV1(Runtime *runtime, JClass *clazz) {
   s32 a1 = localvar_getInt(runtime->localvar, 0);
   glCullFace(a1);
+  return 0;
+}
+
+s32 org_lwjgl_opengl_GL11_glColorMaterial_V2(Runtime *runtime, JClass *clazz) {
+  s32 a1 = localvar_getInt(runtime->localvar, 0);
+  s32 a2 = localvar_getInt(runtime->localvar, 1);
+  glColorMaterial(a1, a2);
+  return 0;
+}
+
+s32 org_lwjgl_opengl_GL11_glColorMask_V4(Runtime *runtime, JClass *clazz) {
+  s32 a1 = localvar_getInt(runtime->localvar, 0);
+  s32 a2 = localvar_getInt(runtime->localvar, 1);
+  s32 a3 = localvar_getInt(runtime->localvar, 2);
+  s32 a4 = localvar_getInt(runtime->localvar, 3);
+  glColorMask(a1, a2, a3, a4);
   return 0;
 }
 
@@ -682,6 +706,8 @@ static java_native_method METHODS_LWJGL_TABLE[] = {
 
     {"org/lwjgl/opengl/GL11", "glTexCoord2f", "(FF)V",
      org_lwjgl_opengl_GL11_glTexCoord2f_V2},
+    {"org/lwjgl/opengl/GL11", "glVertex2f", "(FF)V",
+     org_lwjgl_opengl_GL11_glVertex2f_V2},
     {"org/lwjgl/opengl/GL11", "glVertex3f", "(FFF)V",
      org_lwjgl_opengl_GL11_glVertex3f_V3},
     {"org/lwjgl/opengl/GL11", "glTexImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V",
@@ -689,6 +715,10 @@ static java_native_method METHODS_LWJGL_TABLE[] = {
 
     {"org/lwjgl/opengl/GL11", "glCullFace", "(I)V",
      org_lwjgl_opengl_GL11_glCullFaceV1},
+    {"org/lwjgl/opengl/GL11", "glColorMaterial", "(II)V",
+     org_lwjgl_opengl_GL11_glColorMaterial_V2},
+    {"org/lwjgl/opengl/GL11", "glColorMask", "(ZZZZ)V",
+     org_lwjgl_opengl_GL11_glColorMask_V4},
 };
 
 void reg_lwjgl_native_lib(MiniJVM *jvm) {
