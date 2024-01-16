@@ -18,6 +18,7 @@ public class GL11 {
     public static native void glRotatef(float r, float g, float b, float a4);
     public static native int glRenderMode(int a1);
     public static native void glClear(int a1);
+    public static native void glCullFace(int a1);
     public static native void glFogi(int a1, int a2);
     public static native void glFogf(int a1, float a2);
     public static native int glGenLists(int a1);
@@ -42,6 +43,7 @@ public class GL11 {
     public static native void glPopMatrix();
 
     public static native void glTexCoord2f(float x, float y);
+    public static native void glTexImage2D(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, java.nio.ByteBuffer a9);
     public static native void glVertex3f(float x, float y, float z);
     public static native void glLightModel(int a1, java.nio.FloatBuffer a2);
     public static native void glGetFloat(int a1, java.nio.FloatBuffer a2);
@@ -49,10 +51,19 @@ public class GL11 {
     public static native void glFog(int a1, java.nio.FloatBuffer a2);
     public static native void glSelectBuffer(java.nio.IntBuffer a1);
     public static native void glVertexPointer(int a1, int a2, java.nio.FloatBuffer a3);
+    public static native void glNormalPointer(int a1, java.nio.ByteBuffer a3);
     public static native void glInterleavedArrays(int a1, int a2, java.nio.FloatBuffer a3);
     public static native void glColorPointer(int a1, int a2, java.nio.FloatBuffer a3);
+    public static native void glColorPointer(int a1, boolean a2, int a3, java.nio.ByteBuffer a4);
     public static native void glTexCoordPointer(int a1, int a2, java.nio.FloatBuffer a3);
     public static native void glEnableClientState(int a1);
     public static native void glDisableClientState(int a1);
     public static native void glDrawArrays(int a1, int a2, int a3);
+
+    // TODO: ARB dummies; see ContextCapabilities
+    // public static native void glColorPointer(int a1, int a2, int a3, long a4);
+    // public static native void glColorPointer(int a1, int a2, long a3);
+    // public static native void glNormalPointer(int a1, int a2, long a3);
+    // public static native void glTexCoordPointer(int a1, int a2, int a3, long a4);
+    // public static native void glVertexPointer(int a1, int a2, int a3, long a4);
 }
