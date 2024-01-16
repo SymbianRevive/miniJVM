@@ -47,8 +47,8 @@ static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
   case SDL_MOUSEMOTION:
     g_X = ev.motion.x;
     g_Y = ev.motion.y;
-    g_DX = ev.motion.xrel / 4;
-    g_DY = -ev.motion.yrel / 4;
+    g_DX = (float)ev.motion.xrel / 2.f;
+    g_DY = -(float)ev.motion.yrel / 2.f;
     break;
   case SDL_MOUSEBUTTONDOWN:
     g_mouseStatus |= SDL_BUTTON(ev.button.button);
@@ -63,6 +63,16 @@ static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
   }
 
   push_int(stack, 1);
+  return 0;
+}
+
+static s32 org_lwjgl_input_Mouse_getX_I0(Runtime *runtime, JClass *clazz) {
+  push_int(runtime->stack, g_X);
+  return 0;
+}
+
+static s32 org_lwjgl_input_Mouse_getY_I0(Runtime *runtime, JClass *clazz) {
+  push_int(runtime->stack, g_Y);
   return 0;
 }
 
@@ -210,7 +220,7 @@ static s32 org_lwjgl_input_Keyboard_getEventKeyState_Z0(Runtime *runtime,
     return 0;
   }
   push_int(runtime->stack,
-           SPARSE_GET(g_sparseKeyStatusMap, lwjgl2sdl[g_eventKey]));
+           SPARSE_GET(g_sparseKeyStatusMap, g_eventKey));
   return 0;
 }
 
@@ -266,6 +276,8 @@ static java_native_method METHODS_LWJGL_PLATFORM_TABLE[] = {
     {"org/lwjgl/input/Mouse", "destroy", "()V", STUB_V0},
     {"org/lwjgl/input/Mouse", "getDX", "()I", org_lwjgl_input_Mouse_getDX_I0},
     {"org/lwjgl/input/Mouse", "getDY", "()I", org_lwjgl_input_Mouse_getDY_I0},
+    {"org/lwjgl/input/Mouse", "getX", "()I", org_lwjgl_input_Mouse_getX_I0},
+    {"org/lwjgl/input/Mouse", "getY", "()I", org_lwjgl_input_Mouse_getY_I0},
     {"org/lwjgl/input/Mouse", "getEventButton", "()I",
      org_lwjgl_input_Mouse_getEventButton_I0},
     {"org/lwjgl/input/Mouse", "getEventButtonState", "()Z",

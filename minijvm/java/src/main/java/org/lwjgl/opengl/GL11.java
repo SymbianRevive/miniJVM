@@ -41,10 +41,12 @@ public class GL11 {
     public static native void glOrtho(double left, double right, double bottom, double top, double zNear, double zFar);
     public static native void glPushMatrix();
     public static native void glPopMatrix();
+    public static native void glColorMask(boolean r, boolean g, boolean b, boolean a);
 
     public static native void glTexCoord2f(float x, float y);
     public static native void glTexImage2D(int a1, int a2, int a3, int a4, int a5, int a6, int a7, int a8, java.nio.ByteBuffer a9);
     public static native void glVertex3f(float x, float y, float z);
+    public static native void glVertex2f(float x, float y);
     public static native void glLightModel(int a1, java.nio.FloatBuffer a2);
     public static native void glGetFloat(int a1, java.nio.FloatBuffer a2);
     public static native void glGetInteger(int a1, java.nio.IntBuffer a2);
@@ -59,6 +61,7 @@ public class GL11 {
     public static native void glEnableClientState(int a1);
     public static native void glDisableClientState(int a1);
     public static native void glDrawArrays(int a1, int a2, int a3);
+    public static native void glColorMaterial(int a1, int a2);
 
     // TODO: ARB dummies; see ContextCapabilities
     // public static native void glColorPointer(int a1, int a2, int a3, long a4);
