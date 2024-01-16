@@ -154,6 +154,8 @@ public final class Display {
 	 */
 	public static void setDisplayMode(DisplayMode mode) {
         current_mode = mode;
+        width = current_mode.getWidth();
+        height = current_mode.getHeight();
 	}
 
 	/**
