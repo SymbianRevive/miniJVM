@@ -180,6 +180,11 @@ public final class Display {
 	 */
 	public static native void update();
 
+	// FIXME:XXX: roles reversed!
+	public static void swapBuffers() {
+		update();
+	}
+
 	/**
 	 * Update the window. If the window is visible clears
 	 * the dirty flag and calls swapBuffers() and finally
@@ -391,5 +396,9 @@ public final class Display {
 
 		return height;
 	}
+
+	public static void setFullscreen(boolean fullscreen) {}
+
+	public static void setParent(java.awt.Canvas canvas) {}
 
 }
