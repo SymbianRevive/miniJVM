@@ -74,7 +74,7 @@ public final class Display {
 	private static int width = 800;
 
 	/** the height of the Display window */
-	private static int height = 800;
+	private static int height = 600;
 
 	/** Title of the window (never null) */
 	private static String title = "Game";

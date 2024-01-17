@@ -94,7 +94,8 @@ static s32 org_lwjgl_input_Mouse_getEventDWheel_I0(Runtime *runtime,
 static s32 org_lwjgl_input_Mouse_isButtonDown_Z1(Runtime *runtime,
                                                  JClass *clazz) {
   push_int(runtime->stack,
-           g_mouseStatus & SDL_BUTTON(lwjgl2sdlb[localvar_getInt(runtime->localvar, 0)]));
+           g_mouseStatus &
+               SDL_BUTTON(lwjgl2sdlb[localvar_getInt(runtime->localvar, 0)]));
   return 0;
 }
 
@@ -114,8 +115,18 @@ static s32 org_lwjgl_input_Mouse_getDX_I0(Runtime *runtime, JClass *clazz) {
     SDL_GetRelativeMouseState(&x, &g_DY);
   } else {
     g_DX = 0;
+    g_DY = 0;
   }
   push_int(runtime->stack, x);
+  return 0;
+}
+
+static s32 org_lwjgl_input_Mouse_setCursorPosition_V2(Runtime *runtime,
+                                                      JClass *clazz) {
+  s32 x = localvar_getInt(runtime->localvar, 0);
+  s32 y = localvar_getInt(runtime->localvar, 1);
+
+  SDL_WarpMouse(x, y);
   return 0;
 }
 
@@ -124,6 +135,7 @@ static s32 org_lwjgl_input_Mouse_getDY_I0(Runtime *runtime, JClass *clazz) {
   if (y == 0) {
     SDL_GetRelativeMouseState(&g_DX, &y);
   } else {
+    g_DX = 0;
     g_DY = 0;
   }
   push_int(runtime->stack, -y);
@@ -339,7 +351,8 @@ static java_native_method METHODS_LWJGL_PLATFORM_TABLE[] = {
      org_lwjgl_input_Mouse_getEventY_I0},
     {"org/lwjgl/input/Mouse", "getEventDWheel", "()I",
      org_lwjgl_input_Mouse_getEventDWheel_I0},
-    {"org/lwjgl/input/Mouse", "isButtonDown", "(I)Z", org_lwjgl_input_Mouse_isButtonDown_Z1},
+    {"org/lwjgl/input/Mouse", "isButtonDown", "(I)Z",
+     org_lwjgl_input_Mouse_isButtonDown_Z1},
     {"org/lwjgl/input/Mouse", "getY", "()I", org_lwjgl_input_Mouse_getY_I0},
     {"org/lwjgl/input/Mouse", "getEventButton", "()I",
      org_lwjgl_input_Mouse_getEventButton_I0},
@@ -348,6 +361,8 @@ static java_native_method METHODS_LWJGL_PLATFORM_TABLE[] = {
     {"org/lwjgl/input/Mouse", "next", "()Z", org_lwjgl_input_Mouse_next_Z0},
     {"org/lwjgl/input/Mouse", "setGrabbed", "(Z)V",
      org_lwjgl_input_Mouse_setGrabbed_V1},
+    {"org/lwjgl/input/Mouse", "setCursorPosition", "(II)V",
+     org_lwjgl_input_Mouse_setCursorPosition_V2},
 
     {"org/lwjgl/input/Keyboard", "create", "()V", STUB_V0},
     {"org/lwjgl/input/Keyboard", "destroy", "()V", STUB_V0},
