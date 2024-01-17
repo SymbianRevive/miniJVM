@@ -1,6 +1,7 @@
 #include "jvm.h"
 
 #include "glut_keys.h"
+#include "jvm_util.h"
 
 #include <SDL/SDL.h>
 #include <SDL/SDL_events.h>
@@ -8,9 +9,10 @@
 #include <SDL/SDL_stdinc.h>
 #include <SDL/SDL_video.h>
 #include <assert.h>
+#include <math.h>
 #include <stdint.h>
 
-Sint16 g_DX = 0, g_DY = 0;
+int g_DX = 0, g_DY = 0;
 Uint16 g_X = 0, g_Y = 0;
 int g_mouseStatus;
 Sint16 g_eventButton = -1;
@@ -40,16 +42,12 @@ static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
     return 0;
   }
 
-  g_DX = 0;
-  g_DY = 0;
-
   switch (ev.type) {
-  case SDL_MOUSEMOTION:
+  case SDL_MOUSEMOTION: {
+    const SDL_Surface *i = SDL_GetVideoSurface();
     g_X = ev.motion.x;
-    g_Y = ev.motion.y;
-    g_DX = (float)ev.motion.xrel / 2.f;
-    g_DY = -(float)ev.motion.yrel / 2.f;
-    break;
+    g_Y = i->h - ev.motion.y;
+  } break;
   case SDL_MOUSEBUTTONDOWN:
     g_mouseStatus |= SDL_BUTTON(ev.button.button);
     g_eventButton = ev.button.button;
@@ -66,6 +64,16 @@ static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
   return 0;
 }
 
+static s32 org_lwjgl_input_Mouse_getEventX_I0(Runtime *runtime, JClass *clazz) {
+  push_int(runtime->stack, g_X);
+  return 0;
+}
+
+static s32 org_lwjgl_input_Mouse_getEventY_I0(Runtime *runtime, JClass *clazz) {
+  push_int(runtime->stack, g_Y);
+  return 0;
+}
+
 static s32 org_lwjgl_input_Mouse_getX_I0(Runtime *runtime, JClass *clazz) {
   push_int(runtime->stack, g_X);
   return 0;
@@ -77,12 +85,24 @@ static s32 org_lwjgl_input_Mouse_getY_I0(Runtime *runtime, JClass *clazz) {
 }
 
 static s32 org_lwjgl_input_Mouse_getDX_I0(Runtime *runtime, JClass *clazz) {
-  push_int(runtime->stack, g_DX);
+  int x = g_DX;
+  if (x == 0) {
+    SDL_GetRelativeMouseState(&x, &g_DY);
+  } else {
+    g_DX = 0;
+  }
+  push_int(runtime->stack, x);
   return 0;
 }
 
 static s32 org_lwjgl_input_Mouse_getDY_I0(Runtime *runtime, JClass *clazz) {
-  push_int(runtime->stack, g_DY);
+  int y = g_DY;
+  if (y == 0) {
+    SDL_GetRelativeMouseState(&g_DX, &y);
+  } else {
+    g_DY = 0;
+  }
+  push_int(runtime->stack, -y);
   return 0;
 }
 
@@ -219,8 +239,7 @@ static s32 org_lwjgl_input_Keyboard_getEventKeyState_Z0(Runtime *runtime,
     push_int(runtime->stack, -1);
     return 0;
   }
-  push_int(runtime->stack,
-           SPARSE_GET(g_sparseKeyStatusMap, g_eventKey));
+  push_int(runtime->stack, SPARSE_GET(g_sparseKeyStatusMap, g_eventKey));
   return 0;
 }
 
@@ -243,7 +262,19 @@ static s32 org_lwjgl_input_Display_create_V0(Runtime *runtime, JClass *clazz) {
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-  screen = SDL_SetVideoMode(1024, 768, 0, SDL_OPENGL);
+  Instance *dm = getFieldRefer(getFieldPtr_byName_c(
+      clazz->ins_class, "org/lwjgl/opengl/Display", "current_mode",
+      "Lorg/lwjgl/opengl/DisplayMode;", runtime));
+  if (!dm) {
+    dm = getFieldRefer(getFieldPtr_byName_c(
+        clazz->ins_class, "org/lwjgl/opengl/Display", "initial_mode",
+        "Lorg/lwjgl/opengl/DisplayMode;", runtime));
+  }
+  const s32 width = getFieldInt(getFieldPtr_byName_c(
+      dm, "org/lwjgl/opengl/DisplayMode", "width", "I", runtime));
+  const s32 height = getFieldInt(getFieldPtr_byName_c(
+      dm, "org/lwjgl/opengl/DisplayMode", "height", "I", runtime));
+  screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
 
   return 0;
 }
@@ -277,6 +308,11 @@ static java_native_method METHODS_LWJGL_PLATFORM_TABLE[] = {
     {"org/lwjgl/input/Mouse", "getDX", "()I", org_lwjgl_input_Mouse_getDX_I0},
     {"org/lwjgl/input/Mouse", "getDY", "()I", org_lwjgl_input_Mouse_getDY_I0},
     {"org/lwjgl/input/Mouse", "getX", "()I", org_lwjgl_input_Mouse_getX_I0},
+    {"org/lwjgl/input/Mouse", "getY", "()I", org_lwjgl_input_Mouse_getY_I0},
+    {"org/lwjgl/input/Mouse", "getEventX", "()I",
+     org_lwjgl_input_Mouse_getEventX_I0},
+    {"org/lwjgl/input/Mouse", "getEventY", "()I",
+     org_lwjgl_input_Mouse_getEventY_I0},
     {"org/lwjgl/input/Mouse", "getY", "()I", org_lwjgl_input_Mouse_getY_I0},
     {"org/lwjgl/input/Mouse", "getEventButton", "()I",
      org_lwjgl_input_Mouse_getEventButton_I0},

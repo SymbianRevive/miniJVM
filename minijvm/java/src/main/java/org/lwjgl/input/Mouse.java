@@ -7,6 +7,8 @@ public class Mouse {
     public static native int getDY();
     public static native int getX();
     public static native int getY();
+    public static native int getEventX();
+    public static native int getEventY();
     public static native int getEventButton();
     public static native boolean getEventButtonState();
     public static native boolean next();

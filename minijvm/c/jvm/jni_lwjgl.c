@@ -46,7 +46,7 @@ s32 org_lwjgl_opengl_GL11_glViewport_IV(Runtime *runtime, JClass *clazz) {
   s32 arg2 = localvar_getInt(runtime->localvar, 1);
   s32 arg3 = localvar_getInt(runtime->localvar, 2);
   s32 arg4 = localvar_getInt(runtime->localvar, 3);
-  // glViewport(arg1, arg2, arg3, arg4); //works, but commented *for now*
+  glViewport(arg1, arg2, arg3, arg4);
   return 0;
 }
 
@@ -110,11 +110,11 @@ s32 org_lwjgl_opengl_GL11_glOrtho_IV(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
   Long2Double a1, a2, a3, a4, a5, a6;
   a1.l = localvar_getLong(runtime->localvar, 0);
-  a2.l = localvar_getLong(runtime->localvar, 1);
-  a3.l = localvar_getLong(runtime->localvar, 2);
-  a4.l = localvar_getLong(runtime->localvar, 3);
-  a5.l = localvar_getLong(runtime->localvar, 4);
-  a6.l = localvar_getLong(runtime->localvar, 5);
+  a2.l = localvar_getLong(runtime->localvar, 2);
+  a3.l = localvar_getLong(runtime->localvar, 4);
+  a4.l = localvar_getLong(runtime->localvar, 6);
+  a5.l = localvar_getLong(runtime->localvar, 8);
+  a6.l = localvar_getLong(runtime->localvar, 10);
   glOrtho(a1.d, a2.d, a3.d, a4.d, a5.d, a6.d);
   return 0;
 }
@@ -393,15 +393,12 @@ s32 org_lwjgl_opengl_GL11_glTexCoordPointer_IV(Runtime *runtime,
   s32 a1 = localvar_getInt(runtime->localvar, 0);
   s32 a2 = localvar_getInt(runtime->localvar, 1);
   Instance *buffer = localvar_getRefer(runtime->localvar, 2);
-  c8 *pBuffer = getFieldPtr_byName_c(buffer, "java/nio/FloatBufferImpl",
-                                     "array", "[F", runtime);
-  Instance *iAry = getFieldRefer(pBuffer);
-  glTexCoordPointer(a1, GL_FLOAT, a2, (GLfloat *)iAry->arr_body);
+  c8 *pBuffer = getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
+  GLfloat *pAry = (GLfloat *)(intptr_t)getFieldLong(pBuffer);
+  glTexCoordPointer(a1, GL_FLOAT, a2, pAry);
 
   return 0;
 }
-
-// glEnableClientState
 
 s32 org_lwjgl_opengl_GL11_gluPickMatrix_IV(Runtime *runtime, JClass *clazz) {
   Int2Float a1, a2, a3, a4;
@@ -410,10 +407,10 @@ s32 org_lwjgl_opengl_GL11_gluPickMatrix_IV(Runtime *runtime, JClass *clazz) {
   a3.i = localvar_getInt(runtime->localvar, 2);
   a4.i = localvar_getInt(runtime->localvar, 3);
   Instance *buffer = localvar_getRefer(runtime->localvar, 4);
-  c8 *pBuffer = getFieldPtr_byName_c(buffer, "java/nio/IntBufferImpl", "array",
-                                     "[I", runtime);
-  Instance *iAry = getFieldRefer(pBuffer);
-  gluPickMatrix(a1.f, a2.f, a3.f, a4.f, (GLint *)iAry->arr_body);
+  c8 *pBuffer =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
+  GLint *pAry = (GLint *)(intptr_t)getFieldLong(pBuffer);
+  gluPickMatrix(a1.f, a2.f, a3.f, a4.f, pAry);
 
   return 0;
 }
