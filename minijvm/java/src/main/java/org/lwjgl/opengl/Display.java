@@ -187,6 +187,9 @@ public final class Display {
 		update();
 	}
 
+	public void sync(int fps) {
+	}
+
 	/**
 	 * Update the window. If the window is visible clears
 	 * the dirty flag and calls swapBuffers() and finally
