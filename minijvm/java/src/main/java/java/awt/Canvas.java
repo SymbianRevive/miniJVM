@@ -1,7 +1,10 @@
 package java.awt;
 
-public class Canvas extends Component {
+public abstract class Canvas extends Component {
     private Dimension preferredSize;
+
+    public synchronized void addNotify() {}
+    public synchronized void removeNotify() {}
 
     public Canvas() {
         preferredSize = new Dimension(1024, 768);
@@ -18,4 +21,5 @@ public class Canvas extends Component {
     void setPreferredSize(Dimension newSize) {
         preferredSize = newSize;
     }
+    public void setFocusable(boolean focusable) {}
 }

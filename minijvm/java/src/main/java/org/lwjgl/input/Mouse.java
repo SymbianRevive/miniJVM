@@ -9,8 +9,12 @@ public class Mouse {
     public static native int getY();
     public static native int getEventX();
     public static native int getEventY();
+    public static native int getEventDWheel();
     public static native int getEventButton();
+    public static native boolean isButtonDown(int button);
     public static native boolean getEventButtonState();
     public static native boolean next();
     public static native void setGrabbed(boolean a1);
+    public static Cursor setNativeCursor(Cursor a1) { return null; }
+    public static void setCursorPosition(int x, int y) {}
 }
