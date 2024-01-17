@@ -15,6 +15,12 @@ public abstract class IntBuffer
         implements Comparable<IntBuffer> {
     private final boolean readOnly;
 
+    protected IntBuffer(boolean readOnly, int cap, long address) {
+        this.readOnly = readOnly;
+        this.capacity = this.limit = cap;
+        this.address = address;
+    }
+
     protected IntBuffer(boolean readOnly, int cap) {
         this.readOnly = readOnly;
         this.capacity = this.limit = cap;

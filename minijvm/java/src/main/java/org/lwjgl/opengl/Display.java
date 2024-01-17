@@ -52,7 +52,7 @@ import java.nio.FloatBuffer;
 public final class Display {
 
 	/** The initial display mode */
-	private static DisplayMode initial_mode;
+	private static DisplayMode initial_mode = new DisplayMode(800, 600);
 
 
 	/** The current display mode, if created */
@@ -104,7 +104,6 @@ public final class Display {
 
 	/** Only constructed by ourselves */
 	private Display() {
-        initial_mode = new DisplayMode(800, 800);
 	}
 
 	/**

@@ -24,6 +24,12 @@ public abstract class CharBuffer
         this.capacity = this.limit = cap;
     }
 
+    protected CharBuffer(boolean readOnly, int cap, long address) {
+        this.readOnly = readOnly;
+        this.capacity = this.limit = cap;
+        this.address = address;
+    }
+
     public static CharBuffer allocate(int capacity) {
         return new CharBufferImpl(new char[capacity], 0, capacity, false);
     }

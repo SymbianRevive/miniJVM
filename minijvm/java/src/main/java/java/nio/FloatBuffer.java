@@ -19,6 +19,12 @@ public abstract class FloatBuffer
         this.readOnly = false;
     }
 
+    protected FloatBuffer(boolean readOnly, int cap, long address) {
+        this.readOnly = readOnly;
+        this.capacity = this.limit = cap;
+        this.address = address;
+    }
+
     protected FloatBuffer(boolean readOnly, int cap) {
         this.readOnly = readOnly;
         this.capacity = this.limit = cap;
