@@ -369,7 +369,7 @@ class ByteBufferImpl extends ByteBuffer {
 
     @Override
     public ShortBuffer asShortBuffer() {
-        return new ShortBuffer(ByteBufferImpl.this.readonly, array.length / Short.BYTES) {
+        return new ShortBuffer(ByteBufferImpl.this.readonly, array.length / Short.BYTES, address) {
 
             @Override
             public ShortBuffer asReadOnlyBuffer() {
@@ -426,7 +426,7 @@ class ByteBufferImpl extends ByteBuffer {
 
     @Override
     public CharBuffer asCharBuffer() {
-        return new CharBuffer(ByteBufferImpl.this.readonly, array.length / Character.BYTES) {
+        return new CharBuffer(ByteBufferImpl.this.readonly, array.length / Character.BYTES, address) {
 
             @Override
             public CharBuffer asReadOnlyBuffer() {
@@ -483,7 +483,7 @@ class ByteBufferImpl extends ByteBuffer {
 
     @Override
     public DoubleBuffer asDoubleBuffer() {
-        return new DoubleBuffer(ByteBufferImpl.this.readonly, array.length / Double.BYTES) {
+        return new DoubleBuffer(ByteBufferImpl.this.readonly, array.length / Double.BYTES, address) {
 
             @Override
             public DoubleBuffer asReadOnlyBuffer() {
@@ -539,7 +539,7 @@ class ByteBufferImpl extends ByteBuffer {
 
     @Override
     public FloatBuffer asFloatBuffer() {
-        return new FloatBuffer(ByteBufferImpl.this.readonly, array.length / Float.BYTES) {
+        return new FloatBuffer(ByteBufferImpl.this.readonly, array.length / Float.BYTES, address) {
 
             @Override
             public FloatBuffer asReadOnlyBuffer() {
@@ -596,7 +596,7 @@ class ByteBufferImpl extends ByteBuffer {
 
     @Override
     public IntBuffer asIntBuffer() {
-        return new IntBuffer(ByteBufferImpl.this.readonly, array.length / Integer.BYTES) {
+        return new IntBuffer(ByteBufferImpl.this.readonly, array.length / Integer.BYTES, address) {
 
             @Override
             public IntBuffer asReadOnlyBuffer() {
@@ -652,7 +652,7 @@ class ByteBufferImpl extends ByteBuffer {
 
     @Override
     public LongBuffer asLongBuffer() {
-        return new LongBuffer(ByteBufferImpl.this.readonly, array.length / Long.BYTES) {
+        return new LongBuffer(ByteBufferImpl.this.readonly, array.length / Long.BYTES, address) {
 
             @Override
             public LongBuffer asReadOnlyBuffer() {

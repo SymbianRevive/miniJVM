@@ -24,6 +24,12 @@ public abstract class LongBuffer
         this.capacity = this.limit = cap;
     }
 
+    protected LongBuffer(boolean readOnly, int cap, long address) {
+        this.readOnly = readOnly;
+        this.capacity = this.limit = cap;
+        this.address = address;
+    }
+
     public static LongBuffer allocate(int capacity) {
         return new LongBufferImpl(new long[capacity], 0, capacity, false);
     }

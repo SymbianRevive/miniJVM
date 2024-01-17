@@ -24,6 +24,12 @@ public abstract class ShortBuffer
         this.capacity = this.limit = cap;
     }
 
+    protected ShortBuffer(boolean readOnly, int cap, long address) {
+        this.readOnly = readOnly;
+        this.capacity = this.limit = cap;
+        this.address = address;
+    }
+
     public static ShortBuffer allocate(int capacity) {
         return new ShortBufferImpl(new short[capacity], 0, capacity, false);
     }
