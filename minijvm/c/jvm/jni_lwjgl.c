@@ -151,6 +151,19 @@ s32 org_lwjgl_opengl_GL11_glGenLists_IV(Runtime *runtime, JClass *clazz) {
   return 0;
 }
 
+s32 org_lwjgl_opengl_GL11_glCallLists_V1(Runtime *runtime, JClass *clazz) {
+  Instance *buffer = localvar_getRefer(runtime->localvar, 0);
+  c8 *pCap =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "capacity", "I", runtime);
+  s32 cap = getFieldInt(pCap);
+  c8 *pBuffer =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
+  GLuint *pAry = (GLuint *)(intptr_t)getFieldLong(pBuffer);
+  glCallLists(cap, GL_INT, pAry);
+
+  return 0;
+}
+
 s32 org_lwjgl_opengl_GL11_glGenTextures_V1(Runtime *runtime, JClass *clazz) {
   Instance *buffer = localvar_getRefer(runtime->localvar, 0);
   c8 *pCap =
@@ -712,6 +725,9 @@ static java_native_method METHODS_LWJGL_TABLE[] = {
      org_lwjgl_opengl_GL11_glColorMaterial_V2},
     {"org/lwjgl/opengl/GL11", "glColorMask", "(ZZZZ)V",
      org_lwjgl_opengl_GL11_glColorMask_V4},
+    {"org/lwjgl/opengl/GL11", "glCallLists", "(Ljava/nio/IntBuffer;)V",
+     org_lwjgl_opengl_GL11_glCallLists_V1},
+
 };
 
 void reg_lwjgl_native_lib(MiniJVM *jvm) {

@@ -1,8 +1,83 @@
 package java.applet;
 
-public interface Applet {
-  public void init();
-  public void start();
-  public void stop();
-  public void destroy();
+import org.mini.reflect.vm.RefNative;
+import java.awt.Component;
+import java.awt.Panel;
+import java.net.URL;
+import java.net.MalformedURLException;
+
+public abstract class Applet extends Panel {
+  public abstract void init();
+  public abstract void start();
+  public abstract void stop();
+  public abstract void destroy();
+
+  private static synchronized boolean waitForAllThreads() {
+    try {
+      for (Thread t : RefNative.getThreads()) {
+        if (t != Thread.currentThread()) {
+          t.join();
+          return false;
+        }
+      }
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
+    return true;
+  }
+
+  public static void main(String[] args) throws Exception {
+    try {
+      System.out.println("Applet launcher: main");
+      String className = args[0];
+      ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+      Class<?> clazz = classLoader.loadClass(className);
+      Applet applet = (Applet) clazz.newInstance();
+
+      System.out.println("Applet launcher: applet init");
+      applet.init();
+
+      System.out.println("Applet launcher: applet start");
+      applet.start();
+
+      System.out.println("Applet launcher: applet join");
+      while (!waitForAllThreads()) {
+      }
+
+      System.out.println("Applet launcher: applet stop");
+      applet.stop();
+
+      System.out.println("Applet launcher: applet destroy");
+      applet.destroy();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  public void add(Component c, Object o) {
+    System.out.println("Add component");
+    try {
+      c.getClass().getMethod("addNotify").invoke(c);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
+
+  public int getWidth() {
+    return 800;
+  }
+  public int getHeight() {
+    return 600;
+  }
+  public URL getDocumentBase() {
+    try {
+      return new URL("file:///tmp/index.html");
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
+  public String getParameter(String name) {
+    return null;
+   }
 }
