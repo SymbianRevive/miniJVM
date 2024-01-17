@@ -24,6 +24,12 @@ public abstract class DoubleBuffer
         this.capacity = this.limit = cap;
     }
 
+    protected DoubleBuffer(boolean readOnly, int cap, long address) {
+        this.readOnly = readOnly;
+        this.capacity = this.limit = cap;
+        this.address = address;
+    }
+
     public static DoubleBuffer allocate(int capacity) {
         return new DoubleBufferImpl(new double[capacity], 0, capacity, false);
     }

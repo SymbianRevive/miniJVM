@@ -153,10 +153,13 @@ s32 org_lwjgl_opengl_GL11_glGenLists_IV(Runtime *runtime, JClass *clazz) {
 
 s32 org_lwjgl_opengl_GL11_glGenTextures_V1(Runtime *runtime, JClass *clazz) {
   Instance *buffer = localvar_getRefer(runtime->localvar, 0);
-  c8 *pBuffer = getFieldPtr_byName_c(buffer, "java/nio/IntBufferImpl", "array",
-                                     "[I", runtime);
-  Instance *iAry = getFieldRefer(pBuffer);
-  glGenTextures(iAry->arr_length, (GLuint *)iAry->arr_body);
+  c8 *pCap =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "capacity", "I", runtime);
+  s32 cap = getFieldInt(pCap);
+  c8 *pBuffer =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
+  GLuint *pAry = (GLuint *)(intptr_t)getFieldLong(pBuffer);
+  glGenTextures(cap, pAry);
 
   return 0;
 }
@@ -187,7 +190,6 @@ s32 org_lwjgl_opengl_GL11_glNewList_IV(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
   s32 arg1 = localvar_getInt(runtime->localvar, 0);
   s32 arg2 = localvar_getInt(runtime->localvar, 1);
-  // s32 arg3 = localvar_getInt(runtime->localvar, 2);
   glNewList(arg1, arg2);
   return 0;
 }
@@ -198,12 +200,10 @@ s32 org_lwjgl_opengl_GL11_glEndList_IV(Runtime *runtime, JClass *clazz) {
 s32 org_lwjgl_opengl_GL11_glCallList_IV(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
   s32 arg1 = localvar_getInt(runtime->localvar, 0);
-  // s32 arg2 = localvar_getInt(runtime->localvar, 1);
-  // s32 arg3 = localvar_getInt(runtime->localvar, 2);
   glCallList(arg1);
   return 0;
 }
-// glGenTextures glBindTexture
+
 s32 org_lwjgl_opengl_GL11_glRenderMode_IV(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
   s32 arg1 = localvar_getInt(runtime->localvar, 0);
@@ -241,10 +241,10 @@ s32 org_lwjgl_opengl_GL11_glLightModel_IV(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
   s32 arg1 = localvar_getInt(runtime->localvar, 0);
   Instance *buffer = localvar_getRefer(runtime->localvar, 1);
-  c8 *pBuffer = getFieldPtr_byName_c(buffer, "java/nio/FloatBufferImpl",
-                                     "array", "[F", runtime);
-  Instance *iAry = getFieldRefer(pBuffer);
-  glLightModelfv(arg1, (GLfloat *)iAry->arr_body);
+  c8 *pBuffer =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
+  GLfloat *pAry = (GLfloat *)(intptr_t)getFieldLong(pBuffer);
+  glLightModelfv(arg1, pAry);
   return 0;
 }
 
@@ -258,30 +258,25 @@ s32 org_lwjgl_opengl_GL11_glAlphaFunc_IV(Runtime *runtime, JClass *clazz) {
 }
 
 s32 org_lwjgl_opengl_GL11_glTranslatef_IV(Runtime *runtime, JClass *clazz) {
-  // RuntimeStack *stack = runtime->stack;
   Int2Float a1, a2, a3;
   a1.i = localvar_getInt(runtime->localvar, 0);
   a2.i = localvar_getInt(runtime->localvar, 1);
   a3.i = localvar_getInt(runtime->localvar, 2);
-  // a4.i = localvar_getInt(runtime->localvar, 3);
 
   glTranslatef(a1.f, a2.f, a3.f);
   return 0;
 }
 s32 org_lwjgl_opengl_GL11_glScalef_IV(Runtime *runtime, JClass *clazz) {
-  // RuntimeStack *stack = runtime->stack;
   Int2Float a1, a2, a3;
   a1.i = localvar_getInt(runtime->localvar, 0);
   a2.i = localvar_getInt(runtime->localvar, 1);
   a3.i = localvar_getInt(runtime->localvar, 2);
-  // a4.i = localvar_getInt(runtime->localvar, 3);
 
   glScalef(a1.f, a2.f, a3.f);
   return 0;
 }
 
 s32 org_lwjgl_opengl_GL11_glRotatef_IV(Runtime *runtime, JClass *clazz) {
-  // RuntimeStack *stack = runtime->stack;
   Int2Float a1, a2, a3, a4;
   a1.i = localvar_getInt(runtime->localvar, 0);
   a2.i = localvar_getInt(runtime->localvar, 1);
@@ -293,7 +288,6 @@ s32 org_lwjgl_opengl_GL11_glRotatef_IV(Runtime *runtime, JClass *clazz) {
 }
 
 s32 org_lwjgl_opengl_GL11_gluPerspective_IV(Runtime *runtime, JClass *clazz) {
-  // RuntimeStack *stack = runtime->stack;
   Int2Float a1, a2, a3, a4;
   a1.i = localvar_getInt(runtime->localvar, 0);
   a2.i = localvar_getInt(runtime->localvar, 1);
@@ -357,10 +351,10 @@ s32 org_lwjgl_opengl_GL11_glVertexPointer_IV(Runtime *runtime, JClass *clazz) {
   s32 size = localvar_getInt(runtime->localvar, 0);
   s32 stride = localvar_getInt(runtime->localvar, 1);
   Instance *buffer = localvar_getRefer(runtime->localvar, 2);
-  c8 *pBuffer = getFieldPtr_byName_c(buffer, "java/nio/FloatBufferImpl",
-                                     "array", "[F", runtime);
-  Instance *iAry = getFieldRefer(pBuffer);
-  glVertexPointer(size, GL_FLOAT, stride, (GLfloat *)iAry->arr_body);
+  c8 *pBuffer =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
+  GLvoid *pAry = (GLvoid *)(intptr_t)getFieldLong(pBuffer);
+  glVertexPointer(size, GL_FLOAT, stride, pAry);
 
   return 0;
 }
@@ -381,10 +375,10 @@ s32 org_lwjgl_opengl_GL11_glColorPointer_IV(Runtime *runtime, JClass *clazz) {
   s32 a1 = localvar_getInt(runtime->localvar, 0);
   s32 a2 = localvar_getInt(runtime->localvar, 1);
   Instance *buffer = localvar_getRefer(runtime->localvar, 2);
-  c8 *pBuffer = getFieldPtr_byName_c(buffer, "java/nio/FloatBufferImpl",
-                                     "array", "[F", runtime);
-  Instance *iAry = getFieldRefer(pBuffer);
-  glColorPointer(a1, GL_FLOAT, a2, (GLfloat *)iAry->arr_body);
+  c8 *pBuffer =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
+  GLvoid *pAry = (GLvoid *)(intptr_t)getFieldLong(pBuffer);
+  glColorPointer(a1, GL_FLOAT, a2, pAry);
 
   return 0;
 }
@@ -394,7 +388,7 @@ s32 org_lwjgl_opengl_GL11_glTexCoordPointer_IV(Runtime *runtime,
   s32 a2 = localvar_getInt(runtime->localvar, 1);
   Instance *buffer = localvar_getRefer(runtime->localvar, 2);
   c8 *pBuffer = getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
-  GLfloat *pAry = (GLfloat *)(intptr_t)getFieldLong(pBuffer);
+  GLvoid *pAry = (GLvoid *)(intptr_t)getFieldLong(pBuffer);
   glTexCoordPointer(a1, GL_FLOAT, a2, pAry);
 
   return 0;
@@ -417,10 +411,13 @@ s32 org_lwjgl_opengl_GL11_gluPickMatrix_IV(Runtime *runtime, JClass *clazz) {
 
 s32 org_lwjgl_opengl_GL11_glSelectBuffer_IV(Runtime *runtime, JClass *clazz) {
   Instance *buffer = localvar_getRefer(runtime->localvar, 0);
-  c8 *pBuffer = getFieldPtr_byName_c(buffer, "java/nio/IntBufferImpl", "array",
-                                     "[I", runtime);
-  Instance *iAry = getFieldRefer(pBuffer);
-  glSelectBuffer(iAry->arr_length, (GLuint *)iAry->arr_body);
+  c8 *pCap =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "capacity", "I", runtime);
+  s32 cap = getFieldInt(pCap);
+  c8 *pBuffer =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
+  GLuint *pAry = (GLuint *)(intptr_t)getFieldLong(pBuffer);
+  glSelectBuffer(cap, pAry);
 
   return 0;
 }
@@ -489,7 +486,6 @@ s32 org_lwjgl_opengl_GL11_glBlendFunc_IV(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
   s32 arg1 = localvar_getInt(runtime->localvar, 0);
   s32 arg2 = localvar_getInt(runtime->localvar, 1);
-  // s32 arg3 = localvar_getInt(runtime->localvar, 2);
   glBlendFunc(arg1, arg2);
   return 0;
 }
