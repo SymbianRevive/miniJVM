@@ -71,10 +71,10 @@ public final class Display {
 	private static int y = -1;
 
 	/** the width of the Display window */
-	private static int width = 0;
+	private static int width = 800;
 
 	/** the height of the Display window */
-	private static int height = 0;
+	private static int height = 800;
 
 	/** Title of the window (never null) */
 	private static String title = "Game";
@@ -104,7 +104,7 @@ public final class Display {
 
 	/** Only constructed by ourselves */
 	private Display() {
-        initial_mode = new DisplayMode(640, 480);
+        initial_mode = new DisplayMode(800, 800);
 	}
 
 	/**
@@ -154,6 +154,7 @@ public final class Display {
 	 */
 	public static void setDisplayMode(DisplayMode mode) {
         current_mode = mode;
+
         width = current_mode.getWidth();
         height = current_mode.getHeight();
 	}
