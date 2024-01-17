@@ -52,6 +52,7 @@ public class GL11 {
     public static native void glGetInteger(int a1, java.nio.IntBuffer a2);
     public static native void glFog(int a1, java.nio.FloatBuffer a2);
     public static native void glSelectBuffer(java.nio.IntBuffer a1);
+    public static native void glCallLists(java.nio.IntBuffer a1);
     public static native void glVertexPointer(int a1, int a2, java.nio.FloatBuffer a3);
     public static native void glNormalPointer(int a1, java.nio.ByteBuffer a3);
     public static native void glInterleavedArrays(int a1, int a2, java.nio.FloatBuffer a3);
