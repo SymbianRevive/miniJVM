@@ -16,5 +16,5 @@ public class Mouse {
     public static native boolean next();
     public static native void setGrabbed(boolean a1);
     public static Cursor setNativeCursor(Cursor a1) { return null; }
-    public static void setCursorPosition(int x, int y) {}
+    public static native void setCursorPosition(int x, int y);
 }

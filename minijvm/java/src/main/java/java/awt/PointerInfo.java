@@ -1,6 +1,7 @@
 package java.awt;
 
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 
 public class PointerInfo {
     public static final PointerInfo INSTANCE = new PointerInfo();
@@ -8,6 +9,6 @@ public class PointerInfo {
     private PointerInfo() {}
 
     Point getLocation() {
-        return new Point(Mouse.getX(), Mouse.getY());
+        return new Point(Mouse.getX(), Display.getHeight() - Mouse.getY());
     }
 }
