@@ -1,7 +1,5 @@
 #pragma once
 
-#include <GL/freeglut_std.h>
-
 #define KEY_0 11
 #define KEY_1 2
 #define KEY_2 3
