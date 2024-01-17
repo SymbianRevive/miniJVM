@@ -86,6 +86,25 @@ s32 org_lwjgl_opengl_GL11_glColor3f_IV(Runtime *runtime, JClass *clazz) {
   return 0;
 }
 
+s32 org_lwjgl_opengl_GL11_glColor3f_V3(Runtime *runtime, JClass *clazz) {
+  RuntimeStack *stack = runtime->stack;
+  Int2Float a1, a2, a3;
+  a1.i = localvar_getInt(runtime->localvar, 0);
+  a2.i = localvar_getInt(runtime->localvar, 1);
+  a3.i = localvar_getInt(runtime->localvar, 2);
+
+  glNormal3f(a1.f, a2.f, a3.f);
+  return 0;
+}
+
+s32 org_lwjgl_opengl_GL11_glLightModelf_V2(Runtime *runtime, JClass *clazz) {
+  RuntimeStack *stack = runtime->stack;
+  s32 a1 = localvar_getInt(runtime->localvar, 0);
+  Int2Float a2 = { .i = localvar_getInt(runtime->localvar, 1) };
+  glLightModelf(a1, a2.f);
+  return 0;
+}
+
 s32 org_lwjgl_opengl_GL11_glColor4f_IV(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
   Int2Float a1, a2, a3, a4;
@@ -258,6 +277,18 @@ s32 org_lwjgl_opengl_GL11_glLightModel_IV(Runtime *runtime, JClass *clazz) {
       getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
   GLfloat *pAry = (GLfloat *)(intptr_t)getFieldLong(pBuffer);
   glLightModelfv(arg1, pAry);
+  return 0;
+}
+
+s32 org_lwjgl_opengl_GL11_glLight_V3(Runtime *runtime, JClass *clazz) {
+  RuntimeStack *stack = runtime->stack;
+  s32 arg1 = localvar_getInt(runtime->localvar, 0);
+  s32 arg2 = localvar_getInt(runtime->localvar, 1);
+  Instance *buffer = localvar_getRefer(runtime->localvar, 2);
+  c8 *pBuffer =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
+  GLfloat *pAry = (GLfloat *)(intptr_t)getFieldLong(pBuffer);
+  glLightfv(arg1, arg2, pAry);
   return 0;
 }
 
@@ -574,6 +605,12 @@ s32 org_lwjgl_opengl_GL11_glCullFaceV1(Runtime *runtime, JClass *clazz) {
   return 0;
 }
 
+s32 org_lwjgl_opengl_GL11_glLineWidthV1(Runtime *runtime, JClass *clazz) {
+  Int2Float a1 = { .i = localvar_getInt(runtime->localvar, 0) };
+  glLineWidth(a1.f);
+  return 0;
+}
+
 s32 org_lwjgl_opengl_GL11_glColorMaterial_V2(Runtime *runtime, JClass *clazz) {
   s32 a1 = localvar_getInt(runtime->localvar, 0);
   s32 a2 = localvar_getInt(runtime->localvar, 1);
@@ -587,6 +624,33 @@ s32 org_lwjgl_opengl_GL11_glColorMask_V4(Runtime *runtime, JClass *clazz) {
   s32 a3 = localvar_getInt(runtime->localvar, 2);
   s32 a4 = localvar_getInt(runtime->localvar, 3);
   glColorMask(a1, a2, a3, a4);
+  return 0;
+}
+
+s32 org_lwjgl_opengl_GL11_glDepthMask_V1(Runtime *runtime, JClass *clazz) {
+  s32 a1 = localvar_getInt(runtime->localvar, 0);
+  glDepthMask(a1);
+  return 0;
+}
+
+s32 org_lwjgl_opengl_GL11_glTexSubImage2D_V9(Runtime *runtime, JClass *clazz) {
+  int n = 0;
+  s32 a1 = localvar_getInt(runtime->localvar, n++);
+  s32 a2 = localvar_getInt(runtime->localvar, n++);
+  s32 a3 = localvar_getInt(runtime->localvar, n++);
+  s32 a4 = localvar_getInt(runtime->localvar, n++);
+  s32 a5 = localvar_getInt(runtime->localvar, n++);
+  s32 a6 = localvar_getInt(runtime->localvar, n++);
+  s32 a7 = localvar_getInt(runtime->localvar, n++);
+  s32 a8 = localvar_getInt(runtime->localvar, n++);
+  Instance *buffer = localvar_getRefer(runtime->localvar, n);
+  n+=2;
+
+  c8 *pBuffer =
+      getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
+  GLvoid *pAry = (GLvoid *)(intptr_t)getFieldLong(pBuffer);
+
+  glTexSubImage2D(a1, a2, a3, a4, a5, a6, a7, a8, pAry);
   return 0;
 }
 
@@ -643,7 +707,11 @@ static java_native_method METHODS_LWJGL_TABLE[] = {
      org_lwjgl_opengl_GL11_glRotatef_IV},
      {"org/lwjgl/opengl/GL11", "glViewport", "(IIII)V",
      org_lwjgl_opengl_GL11_glViewport_IV},
-     
+
+    {"org/lwjgl/opengl/GL11", "glLightModelf", "(IF)V",
+     org_lwjgl_opengl_GL11_glLightModelf_V2},
+    {"org/lwjgl/opengl/GL11", "glNormal3f", "(FFF)V",
+     org_lwjgl_opengl_GL11_glColor3f_V3},
     {"org/lwjgl/opengl/GL11", "glColor3f", "(FFF)V",
      org_lwjgl_opengl_GL11_glColor3f_IV},
     {"org/lwjgl/opengl/GL11", "glColor4f", "(FFFF)V",
@@ -656,6 +724,8 @@ static java_native_method METHODS_LWJGL_TABLE[] = {
      org_lwjgl_opengl_GL11_glGetFloat_IV},
     {"org/lwjgl/opengl/GL11", "glLightModel", "(ILjava/nio/FloatBuffer;)V",
      org_lwjgl_opengl_GL11_glLightModel_IV},
+    {"org/lwjgl/opengl/GL11", "glLight", "(IILjava/nio/FloatBuffer;)V",
+     org_lwjgl_opengl_GL11_glLight_V3},
     {"org/lwjgl/util/glu/GLU", "gluBuild2DMipmaps",
      "(IIIIIILjava/nio/ByteBuffer;)I",
      org_lwjgl_opengl_GL11_gluBuild2DMipmaps_IV},
@@ -719,15 +789,20 @@ static java_native_method METHODS_LWJGL_TABLE[] = {
     {"org/lwjgl/opengl/GL11", "glTexImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V",
      org_lwjgl_opengl_GL11_glTexImage2D_V9},
 
+    {"org/lwjgl/opengl/GL11", "glLineWidth", "(F)V",
+     org_lwjgl_opengl_GL11_glLineWidthV1},
     {"org/lwjgl/opengl/GL11", "glCullFace", "(I)V",
      org_lwjgl_opengl_GL11_glCullFaceV1},
     {"org/lwjgl/opengl/GL11", "glColorMaterial", "(II)V",
      org_lwjgl_opengl_GL11_glColorMaterial_V2},
     {"org/lwjgl/opengl/GL11", "glColorMask", "(ZZZZ)V",
      org_lwjgl_opengl_GL11_glColorMask_V4},
+    {"org/lwjgl/opengl/GL11", "glDepthMask", "(Z)V",
+     org_lwjgl_opengl_GL11_glDepthMask_V1},
     {"org/lwjgl/opengl/GL11", "glCallLists", "(Ljava/nio/IntBuffer;)V",
      org_lwjgl_opengl_GL11_glCallLists_V1},
-
+    {"org/lwjgl/opengl/GL11", "glTexSubImage2D", "(IIIIIIIILjava/nio/ByteBuffer;)V",
+     org_lwjgl_opengl_GL11_glTexSubImage2D_V9},
 };
 
 void reg_lwjgl_native_lib(MiniJVM *jvm) {
