@@ -1,5 +1,7 @@
 package java.awt;
 
+import org.lwjgl.opengl.Display;
+
 public abstract class Canvas extends Component {
     private Dimension preferredSize;
 
@@ -7,16 +9,16 @@ public abstract class Canvas extends Component {
     public synchronized void removeNotify() {}
 
     public Canvas() {
-        preferredSize = new Dimension(1024, 768);
+        preferredSize = new Dimension(800, 600);
     }
     Graphics getGraphics() {
         return new Graphics();
     }
     int getHeight() {
-        return (int)preferredSize.getHeight();
+        return Display.getHeight();
     }
     int getWidth() {
-        return (int)preferredSize.getWidth();
+        return Display.getWidth();
     }
     void setPreferredSize(Dimension newSize) {
         preferredSize = newSize;

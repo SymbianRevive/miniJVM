@@ -59,7 +59,7 @@
     #else
     #   error "Unknown Apple platform"
     #endif
-#elif __linux__
+#elif __linux__ || defined(__PSP__) || defined(__VITA__) || defined(__EMSCRIPTEN__)
    // linux
    #define __JVM_OS_LINUX__ 1
 #elif defined(_POSIX_VERSION)
