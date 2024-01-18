@@ -60,6 +60,7 @@ public class GL11 {
     public static native void glCallLists(java.nio.IntBuffer a1);
     public static native void glVertexPointer(int a1, int a2, java.nio.FloatBuffer a3);
     public static native void glNormalPointer(int a1, java.nio.ByteBuffer a3);
+    public static native void glNormalPointer(int a1, java.nio.FloatBuffer a3);
     public static native void glInterleavedArrays(int a1, int a2, java.nio.FloatBuffer a3);
     public static native void glColorPointer(int a1, int a2, java.nio.FloatBuffer a3);
     public static native void glColorPointer(int a1, boolean a2, int a3, java.nio.ByteBuffer a4);
@@ -67,6 +68,7 @@ public class GL11 {
     public static native void glEnableClientState(int a1);
     public static native void glDisableClientState(int a1);
     public static native void glDrawArrays(int a1, int a2, int a3);
+    public static native void glDrawElements(int a1, java.nio.IntBuffer a2);
     public static native void glColorMaterial(int a1, int a2);
     public static native void glTexSubImage2D(int target, int level, int xoffset, int yoffset, int width, int height, int format, int type, java.nio.ByteBuffer pixels);
 
