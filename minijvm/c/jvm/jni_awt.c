@@ -10,6 +10,9 @@ static s32 javax_imageio_ImageIO_readInternal_V0(Runtime *runtime,
   int x, y, comp;
   u8 *bytes = stbi_load_from_memory((u8 *)iAry->arr_body, iAry->arr_length, &x,
                                     &y, &comp, 4);
+  if (x == 0 || y == 0 || !bytes) {
+    abort();
+  }
   Instance *rgb = jarray_create_by_type_index(runtime, x * y, DATATYPE_INT);
 
   if (comp == 4) {
@@ -26,7 +29,10 @@ static s32 javax_imageio_ImageIO_readInternal_V0(Runtime *runtime,
       rgb->arr_body[i*4 + 1] = bytes[i*4 + 1];
       rgb->arr_body[i*4 + 0] = bytes[i*4 + 2];
     }
+  } else {
+    abort();
   }
+  stbi_image_free(bytes);
 
   Instance *iSize = localvar_getRefer(runtime->localvar, 1);
   jarray_set_field(iSize, 0, x);
