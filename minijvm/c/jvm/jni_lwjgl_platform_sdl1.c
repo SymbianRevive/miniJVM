@@ -3,6 +3,8 @@
 #include "glut_keys.h"
 #include "jvm_util.h"
 
+#include <GL/gl.h>
+#include <GL/glext.h>
 #include <SDL/SDL.h>
 #include <SDL/SDL_events.h>
 #include <SDL/SDL_mouse.h>
@@ -34,7 +36,11 @@ static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
   g_eventDWheel = 0;
 
   SDL_Event ev;
+#ifndef __EMSCRIPTEN__
   int res = SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_MOUSEEVENTMASK);
+#else
+  int res = SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEBUTTONUP);
+#endif
   if (res < 0) {
     printf("%s\n", SDL_GetError());
     abort();
@@ -144,7 +150,11 @@ static s32 org_lwjgl_input_Mouse_getDY_I0(Runtime *runtime, JClass *clazz) {
 
 static s32 org_lwjgl_input_Mouse_getEventButton_I0(Runtime *runtime,
                                                    JClass *clazz) {
-  push_int(runtime->stack, sdl2lwjglb[g_eventButton]);
+  if (g_eventButton == -1) {
+    push_int(runtime->stack, 0);
+  } else {
+    push_int(runtime->stack, sdl2lwjglb[g_eventButton]);
+  }
   return 0;
 }
 
@@ -224,7 +234,11 @@ static s32 org_lwjgl_input_Keyboard_next_Z0(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
 
   SDL_Event ev;
+#ifndef __EMSCRIPTEN__
   int res = SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_KEYEVENTMASK);
+#else
+  int res = SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_KEYDOWN, SDL_KEYUP);
+#endif
   if (!res) {
     g_eventKey = -1;
     push_int(stack, 0);
@@ -298,14 +312,19 @@ static s32 org_lwjgl_input_Display_create_V0(Runtime *runtime, JClass *clazz) {
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-  Instance *dm = getFieldRefer(getFieldPtr_byName_c(
-      clazz->ins_class, "org/lwjgl/opengl/Display", "current_mode",
-      "Lorg/lwjgl/opengl/DisplayMode;", runtime));
+  Utf8String *cn = utf8_create_c("org/lwjgl/opengl/Display");
+  Utf8String *fn = utf8_create_c("current_mode");
+  Utf8String *ft = utf8_create_c("Lorg/lwjgl/opengl/DisplayMode;");
+
+  Instance *dm = getFieldRefer(getStaticFieldPtr(find_fieldInfo_by_name(cn, fn, ft, clazz->jloader, runtime)));
   if (!dm) {
-    dm = getFieldRefer(getFieldPtr_byName_c(
-        clazz->ins_class, "org/lwjgl/opengl/Display", "initial_mode",
-        "Lorg/lwjgl/opengl/DisplayMode;", runtime));
+    utf8_destory(fn);
+    fn = utf8_create_c("initial_mode");
+    dm = getFieldRefer(getStaticFieldPtr(find_fieldInfo_by_name(cn, fn, ft, clazz->jloader, runtime)));
   }
+  utf8_destory(ft);
+  utf8_destory(fn);
+  utf8_destory(cn);
   const s32 width = getFieldInt(getFieldPtr_byName_c(
       dm, "org/lwjgl/opengl/DisplayMode", "width", "I", runtime));
   const s32 height = getFieldInt(getFieldPtr_byName_c(
@@ -324,8 +343,12 @@ static s32 org_lwjgl_input_Display_update_V0(Runtime *runtime, JClass *clazz) {
 
   SDL_Event ev;
   SDL_PumpEvents();
+#ifndef __EMSCRIPTEN__
   while (SDL_PeepEvents(&ev, 1, SDL_GETEVENT,
                         ~(SDL_KEYEVENTMASK | SDL_MOUSEEVENTMASK))) {
+#else
+  while (SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_QUIT, SDL_USEREVENT)) {
+#endif
     if (ev.type == SDL_QUIT) {
       push_int(runtime->stack, 0);
       execute_method(find_methodInfo_by_name_c("java.lang.System", "exit",
@@ -353,7 +376,6 @@ static java_native_method METHODS_LWJGL_PLATFORM_TABLE[] = {
      org_lwjgl_input_Mouse_getEventDWheel_I0},
     {"org/lwjgl/input/Mouse", "isButtonDown", "(I)Z",
      org_lwjgl_input_Mouse_isButtonDown_Z1},
-    {"org/lwjgl/input/Mouse", "getY", "()I", org_lwjgl_input_Mouse_getY_I0},
     {"org/lwjgl/input/Mouse", "getEventButton", "()I",
      org_lwjgl_input_Mouse_getEventButton_I0},
     {"org/lwjgl/input/Mouse", "getEventButtonState", "()Z",

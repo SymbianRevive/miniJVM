@@ -5,12 +5,15 @@ import java.awt.Component;
 import java.awt.Panel;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.util.Properties;
 
 public abstract class Applet extends Panel {
   public abstract void init();
   public abstract void start();
   public abstract void stop();
   public abstract void destroy();
+
+  private static Properties params = new Properties();
 
   private static synchronized boolean waitForAllThreads() {
     try {
@@ -28,6 +31,10 @@ public abstract class Applet extends Panel {
 
   public static void main(String[] args) throws Exception {
     try {
+      params.put("username", "BlahajMastr");
+      params.put("haspaid", "false");
+      params.put("server", "localhost");
+      params.put("port", "0");
       System.out.println("Applet launcher: main");
       String className = args[0];
       ClassLoader classLoader = ClassLoader.getSystemClassLoader();
@@ -69,15 +76,24 @@ public abstract class Applet extends Panel {
   public int getHeight() {
     return 600;
   }
+  public URL getCodeBase() {
+    try {
+      return new URL("http://www.minecraft.net/game/");
+    } catch (MalformedURLException e) {
+      e.printStackTrace();
+      return null;
+    }
+  }
   public URL getDocumentBase() {
     try {
-      return new URL("file:///tmp/index.html");
+      return new URL("http://www.minecraft.net/game/");
     } catch (MalformedURLException e) {
       e.printStackTrace();
       return null;
     }
   }
   public String getParameter(String name) {
-    return null;
+    System.err.println("getParameter: " + name);
+    return params.getProperty(name, "");
    }
 }

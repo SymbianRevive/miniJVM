@@ -5,6 +5,9 @@
 #include "jit.h"
 #include "garbage.h"
 
+#include <unistd.h>
+#include <fcntl.h>
+
 
 /* ==================================opcode implementation =============================*/
 
@@ -1740,9 +1743,6 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
 
                         case op_fdiv: {
-                            if (!(sp - 1)->fvalue) {
-                                goto label_arrithmetic_throw;
-                            } else {
                                 --sp;
                                 (sp - 1)->fvalue /= (sp - 0)->fvalue;
 
@@ -1751,14 +1751,10 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                 jvm_printf("fdiv:  %f\n", (sp - 1)->fvalue);
 #endif
                                 ip++;
-                            }
                             break;
                         }
 
                         case op_ddiv: {
-                            if (!(sp - 2)->dvalue) {
-                                goto label_arrithmetic_throw;
-                            } else {
                                 --sp;
                                 --sp;
                                 (sp - 2)->dvalue /= (sp - 0)->dvalue;
@@ -1768,7 +1764,6 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                 jvm_printf("ddiv:  %lf\n", (sp - 2)->dvalue);
 #endif
                                 ip++;
-                            }
                             break;
                         }
 
@@ -1808,9 +1803,6 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
 
                         case op_frem: {
-                            if (!(sp - 1)->fvalue) {
-                                goto label_arrithmetic_throw;
-                            } else {
                                 --sp;
                                 fval1 = (sp - 0)->fvalue;
                                 fval2 = (sp - 1)->fvalue;
@@ -1821,15 +1813,11 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
                                 (sp - 1)->fvalue = v;
                                 ip++;
-                            }
                             break;
                         }
 
 
                         case op_drem: {
-                            if (!(sp - 2)->dvalue) {
-                                goto label_arrithmetic_throw;
-                            } else {
                                 --sp;
                                 --sp;
                                 dval1 = (sp - 0)->dvalue;
@@ -1842,7 +1830,6 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 #endif
                                 (sp - 2)->dvalue = v;
                                 ip++;
-                            }
                             break;
                         }
 
@@ -3059,6 +3046,12 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             cmr = class_get_constant_method_ref(clazz, *((u16 *) (ip + 1)));
 
                             ins = (sp - 1 - cmr->para_slots)->rvalue;
+                            int nullfd = open("/dev/random", O_WRONLY);
+                            if (ins && write(nullfd, ins, sizeof(Instance)) < 0) {
+                              jvm_printf("CORRUPTED INSTANCE DETECTED!\n");
+                              abort();
+                            }
+                            close(nullfd);
                             if (!ins) {
                                 goto label_null_throw;
                             } else {
@@ -3075,7 +3068,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                 }
 
                                 if (!m) {
-                                    err_msg = utf8_cstr(cmr->name);
+                                    Utf8String *s = utf8_create_copy(cmr->clsName);
+                                    utf8_append_c(s, "/");
+                                    utf8_append(s, cmr->name);
+                                    utf8_append_c(s, "(");
+                                    utf8_append(s, ins->mb.clazz->name);
+                                    utf8_append_c(s, ")");
+                                    err_msg = strdup(utf8_cstr(s));
+                                    utf8_destory(s);
                                     goto label_nosuchmethod_throw;
                                 } else {
                                     s8 match = 0;
@@ -3123,7 +3123,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             m = cmr->methodInfo;
 
                             if (!m) {
-                                err_msg = utf8_cstr(cmr->name);
+                                Utf8String *s = utf8_create_copy(cmr->clsName);
+                                utf8_append_c(s, "/");
+                                utf8_append(s, cmr->name);
+                                utf8_append_c(s, "(");
+                                utf8_append(s, ins->mb.clazz->name);
+                                utf8_append_c(s, ")");
+                                err_msg = strdup(utf8_cstr(s));
+                                utf8_destory(s);
                                 goto label_nosuchmethod_throw;
                             } else {
                                 *ip = op_invokespecial_fast;
@@ -3138,7 +3145,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                             m = cmr->methodInfo;
 
                             if (!m) {
-                                err_msg = utf8_cstr(cmr->name);
+                                Utf8String *s = utf8_create_copy(cmr->clsName);
+                                utf8_append_c(s, "/");
+                                utf8_append(s, cmr->name);
+                                utf8_append_c(s, "(");
+                                utf8_append(s, ins->mb.clazz->name);
+                                utf8_append_c(s, ")");
+                                err_msg = strdup(utf8_cstr(s));
+                                utf8_destory(s);
                                 goto label_nosuchmethod_throw;
                             } else {
                                 *ip = op_invokestatic_fast;
@@ -3168,7 +3182,14 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
                                     spin_unlock(&jvm->lock_cloader);
                                 }
                                 if (!m) {
-                                    err_msg = utf8_cstr(cmr->name);
+                                    Utf8String *s = utf8_create_copy(cmr->clsName);
+                                    utf8_append_c(s, "/");
+                                    utf8_append(s, cmr->name);
+                                    utf8_append_c(s, "(");
+                                    utf8_append(s, ins->mb.clazz->name);
+                                    utf8_append_c(s, ")");
+                                    err_msg = strdup(utf8_cstr(s));
+                                    utf8_destory(s);
                                     goto label_nosuchmethod_throw;
                                 } else {
                                     *ip = op_invokeinterface_fast;
@@ -3909,6 +3930,12 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             cmr = class_get_constant_method_ref(clazz, *((u16 *) (ip + 1)));
                             ins = (sp - 1 - cmr->para_slots)->rvalue;
+                            int nullfd = open("/dev/random", O_WRONLY);
+                            if (ins && write(nullfd, ins, sizeof(Instance)) < 0) {
+                              jvm_printf("CORRUPTED INSTANCE DETECTED!\n");
+                              abort();
+                            }
+                            close(nullfd);
                             if (!ins) {
                                 goto label_null_throw;
                             } else {

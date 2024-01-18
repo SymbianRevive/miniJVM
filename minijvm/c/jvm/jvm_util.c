@@ -4,6 +4,7 @@
 
 
 #include <stdarg.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include "jvm.h"
 
@@ -773,6 +774,7 @@ s32 sys_properties_load(MiniJVM *jvm) {
     sys_properties_set_c(jvm, "path.separator", ":");
     sys_properties_set_c(jvm, "file.separator", "/");
     sys_properties_set_c(jvm, "line.separator", "\n");
+    sys_properties_set_c(jvm, "user.home", getenv("HOME"));
 #elif __JVM_OS_MINGW__ || __JVM_OS_CYGWIN__ || __JVM_OS_VS__
     sys_properties_set_c(jvm, "os.name", "Windows");
     sys_properties_set_c(jvm, "path.separator", ";");
