@@ -1608,7 +1608,7 @@ void reg_net_native_lib(MiniJVM *jvm);
 void reg_reflect_native_lib(MiniJVM *jvm);
 
 #if !defined(LWJGL_PLATFORM_GLUT) && !defined(LWJGL_PLATFORM_SDL1)
-#define LWJGL_PLATFORM_GLUT
+#define LWJGL_PLATFORM_SDL1
 #endif
 
 void reg_lwjgl_native_lib(MiniJVM *jvm);

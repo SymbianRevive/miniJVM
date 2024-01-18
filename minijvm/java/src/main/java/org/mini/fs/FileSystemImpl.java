@@ -66,7 +66,8 @@ abstract public class FileSystemImpl extends org.mini.fs.FileSystem {
         }
         path = removeParentTag(path);
         path = normalize(path);
-        path = path.replace(getSeparator() + ".", "");
+        //FIXME::
+        //path = path.replace(getSeparator() + ".", "");
         return path;
     }
 
