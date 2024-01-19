@@ -31,10 +31,6 @@ public abstract class Applet extends Panel {
 
   public static void main(String[] args) throws Exception {
     try {
-      params.put("username", "BlahajMastr");
-      params.put("haspaid", "false");
-      params.put("server", "localhost");
-      params.put("port", "0");
       System.out.println("Applet launcher: main");
       String className = args[0];
       ClassLoader classLoader = ClassLoader.getSystemClassLoader();
@@ -94,6 +90,6 @@ public abstract class Applet extends Panel {
   }
   public String getParameter(String name) {
     System.err.println("getParameter: " + name);
-    return params.getProperty(name, "");
+    return params.getProperty(name, null);
    }
 }
