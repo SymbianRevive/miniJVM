@@ -1369,6 +1369,7 @@ void _changeBytesOrder(MethodInfo *method) {
     memcpy(ca->bytecode_for_jit, ca->code, ca->code_length);
 
     u8 *mc = ca->code;
+#if 0
     if (ca->code_length == 5) {//optimize setter eg: void setSize(int size){this.size=size;}
         u8 mc4 = mc[4];
         if (mc[1] == op_getfield
@@ -1387,6 +1388,7 @@ void _changeBytesOrder(MethodInfo *method) {
             //jvm_printf(" setter %s.%s  %d \n", utf8_cstr(method->_this_class->name), utf8_cstr(method->name), method->_this_class->status);
         }
     }
+#endif
 }
 
 s32 _convert_to_code_attribute(CodeAttribute *ca, AttributeInfo *attr, JClass *clazz) {
