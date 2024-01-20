@@ -151,7 +151,10 @@ static SLJIT_INLINE sljit_uw get_page_alignment(void) {
 	sljit_sw align;
 
 	if (!sljit_page_align) {
-#ifdef _SC_PAGESIZE
+#ifdef __vita__
+		align = 4096;
+		
+#elif _SC_PAGESIZE
 		align = sysconf(_SC_PAGESIZE);
 #else
 		align = getpagesize();

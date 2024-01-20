@@ -17,15 +17,131 @@
 #include "jvm/jvm.h"
 #include "jvm/garbage.h"
 
+#ifdef __vita__
+#define __psp2__
+#include <gpu_es4/psp2_pvr_hint.h>
 
+#include <psp2/kernel/modulemgr.h>
+#include <gl4esinit.h>
+#include <EGL/egl.h>
+
+
+int _newlib_heap_size_user   = 100 * 1024 * 1024;
+unsigned int sceLibcHeapSize = 50 * 1024 * 1024;
+
+EGLDisplay display;
+EGLContext context;
+EGLSurface surface;
+
+static void getFBSize(int *width, int *height)
+{
+    *width = 960;
+    *height = 544;
+}
+void init_vita() {
+    //stolen code?!
+    Psp2NativeWindow window;
+
+
+
+	EGLint width;
+	EGLint height;
+    static const EGLint attributeList[] = {
+		EGL_RED_SIZE, 8,
+		EGL_GREEN_SIZE, 8,
+		EGL_BLUE_SIZE, 8,
+		EGL_ALPHA_SIZE, 8,
+		EGL_DEPTH_SIZE, 8,
+		EGL_STENCIL_SIZE, 8,
+		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
+		EGL_NONE
+	};
+
+	static const EGLint contextAttributeList[] = {
+		EGL_CONTEXT_CLIENT_VERSION, 2,
+		EGL_NONE
+	};
+
+	EGLConfig config = NULL;
+	EGLint numConfigs = 0;
+    PVRSRV_PSP2_APPHINT hint;
+    sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
+    sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
+    
+    sceKernelLoadStartModule("app0:module/libGL.suprx", 0, NULL, 0, NULL, NULL);
+
+    sceKernelLoadStartModule("app0:module/libgpu_es4_ext.suprx", 0, NULL, 0, NULL, NULL);
+    sceKernelLoadStartModule("app0:module/libIMGEGL.suprx", 0, NULL, 0, NULL, NULL);
+
+    PVRSRVInitializeAppHint(&hint);
+    
+    
+    // hint.szGLES1 = "app0:module/libGLESv1_CM.suprx";
+    // hint.szGLES2 = "app0:module/libGLESv2.suprx";
+    // hint.szWindowSystem = "app0:module/libpvrPSP2_WSEGL.suprx";
+    snprintf(hint.szGLES1, 256, "%s/%s", "app0:module", "libGLESv1_CM.suprx");
+    snprintf(hint.szGLES2, 256, "%s/%s", "app0:module", "libGLESv2.suprx");
+    snprintf(hint.szWindowSystem, 256, "%s/%s", "app0:module", "libpvrPSP2_WSEGL.suprx");
+    PVRSRVCreateVirtualAppHint(&hint);
+    
+    display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+
+
+	// Initialize the display
+	eglInitialize(display, NULL, NULL);
+
+	// Get avaiable EGL framebuffer configurations
+	eglChooseConfig(display, attributeList, &config, 1, &numConfigs);
+
+
+	// Create an EGL window surface
+	window.type = PSP2_DRAWABLE_TYPE_WINDOW;
+	window.numFlipBuffers = 2;
+	window.flipChainThrdAffinity = 0x20000;
+	window.windowSize = PSP2_WINDOW_960X544;
+
+	// Create a window surface
+	surface = eglCreateWindowSurface(display, config, &window, NULL);
+
+
+	// Create an EGL rendering context
+	context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttributeList);
+
+
+	// Connect the context to the surface
+	eglMakeCurrent(display, surface, surface, context);
+
+	eglQuerySurface(display, surface, EGL_WIDTH, &width);
+	eglQuerySurface(display, surface, EGL_HEIGHT, &height);
+    
+    // sceKernelLoadStartModule("app0:module/libGLESv2.suprx", 0, NULL, 0, NULL, NULL);
+    // sceKernelLoadStartModule("app0:module/libGLESv1_CM.suprx", 0, NULL, 0, NULL, NULL);
+    
+    printf("init pvr\n");
+    set_getprocaddress((void *(*)(const char *))eglGetProcAddress);
+    printf("init getproc\n");
+    set_getmainfbsize(getFBSize);
+    printf("init fb\n");
+    gl4es_setenv("LIBGL_NOTEXRECT", "1", 1);
+    printf("init extarct\n");
+    gl4es_setenv("LIBGL_", "1", 1);
+    printf("init glver\n");
+    initialize_gl4es();
+    printf("init gl4es\n");
+}
+
+void swap_vita() {
+    eglSwapBuffers(display, surface);
+}
+#endif
 /*
  *
  */
 int main(int argc, char **argv) {
 
-    c8 *bootclasspath = NULL;
-    c8 *classpath = NULL;
-    c8 *main_name = NULL;
+    c8 *bootclasspath = "app0:minijvm_rt.jar";
+    c8 *classpath = "app0:rd-132211-launcher_backup.jar";
+    c8 *main_name = "com.mojang.rubydung.Rubydung";
     s32 main_set = 0;
     ArrayList *java_para = arraylist_create(0);
     s32 jdwp = 0;
@@ -43,7 +159,7 @@ int main(int argc, char **argv) {
     if (dpos > 0)utf8_substring(startup_dir, 0, dpos);
     utf8_append_c(startup_dir, "/");
     jvm_printf("App dir:%s\n", utf8_cstr(startup_dir));
-
+#ifndef __vita__
     //default value
     {
         utf8_append(bootcp, startup_dir);
@@ -147,17 +263,29 @@ int main(int argc, char **argv) {
         }
     }
 
+#else
+    init_vita();
+#endif
+    
     MiniJVM *jvm = jvm_create();
+    printf("create jvm\n");
     if (jvm != NULL) {
         jvm->jdwp_enable = jdwp;
         jvm->jdwp_suspend_on_start = 0;
         jvm->max_heap_size = maxheap;//25*1024*1024;//
-
+// #ifdef __vita__
+        // ret = jvm_init(jvm, "app0:minijvm_rt.jar", "app0:rd-132211-launcher_backup.jar");
+// #else
         ret = jvm_init(jvm, bootclasspath, classpath);
+// #endif
         if (ret) {
             jvm_printf("[ERROR]minijvm init error.\n");
         } else {
-            ret = call_main(jvm, main_name, java_para);
+// #ifdef __vita__
+            // ret = call_main(jvm, "com.mojang.rubydung.Rubydung", java_para);
+// #else
+           ret = call_main(jvm, main_name, java_para);
+// #endif
         }
         jvm_destroy(jvm);
     }

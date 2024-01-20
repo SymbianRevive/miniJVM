@@ -1,8 +1,79 @@
 #include "jvm.h"
 #include "jvm_util.h"
 
+#ifdef __VITA__
+#define __psp2__
+#include <GLES2/gl2.h>
+#include "mipmaps.h"
+#endif
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <math.h>
+
+static void __gluMakeIdentityd(GLdouble m[16])
+{
+    m[0+4*0] = 1; m[0+4*1] = 0; m[0+4*2] = 0; m[0+4*3] = 0;
+    m[1+4*0] = 0; m[1+4*1] = 1; m[1+4*2] = 0; m[1+4*3] = 0;
+    m[2+4*0] = 0; m[2+4*1] = 0; m[2+4*2] = 1; m[2+4*3] = 0;
+    m[3+4*0] = 0; m[3+4*1] = 0; m[3+4*2] = 0; m[3+4*3] = 1;
+}
+
+static void __gluMakeIdentityf(GLfloat m[16])
+{
+    m[0+4*0] = 1; m[0+4*1] = 0; m[0+4*2] = 0; m[0+4*3] = 0;
+    m[1+4*0] = 0; m[1+4*1] = 1; m[1+4*2] = 0; m[1+4*3] = 0;
+    m[2+4*0] = 0; m[2+4*1] = 0; m[2+4*2] = 1; m[2+4*3] = 0;
+    m[3+4*0] = 0; m[3+4*1] = 0; m[3+4*2] = 0; m[3+4*3] = 1;
+}
+
+
+#define __glPi 3.14159265358979323846
+const GLubyte*
+gluErrorString(GLenum errorCode)
+{
+    return (const GLubyte *) 0;
+}
+
+void
+gluPerspective(GLdouble fovy, GLdouble aspect, GLdouble zNear, GLdouble zFar)
+{
+    GLdouble m[4][4];
+    double sine, cotangent, deltaZ;
+    double radians = fovy / 2 * __glPi / 180;
+
+    deltaZ = zFar - zNear;
+    sine = sin(radians);
+    if ((deltaZ == 0) || (sine == 0) || (aspect == 0)) {
+	return;
+    }
+    cotangent = cos(radians) / sine;
+
+    __gluMakeIdentityd(&m[0][0]);
+    m[0][0] = cotangent / aspect;
+    m[1][1] = cotangent;
+    m[2][2] = -(zFar + zNear) / deltaZ;
+    m[2][3] = -1;
+    m[3][2] = -2 * zNear * zFar / deltaZ;
+    m[3][3] = 0;
+    glMultMatrixd(&m[0][0]);
+}
+
+
+
+void
+gluPickMatrix(GLdouble x, GLdouble y, GLdouble deltax, GLdouble deltay,
+		  GLint viewport[4])
+{
+    if (deltax <= 0 || deltay <= 0) { 
+	return;
+    }
+
+    /* Translate and scale the picked region to the entire window */
+    glTranslatef((viewport[2] - 2 * (x - viewport[0])) / deltax,
+	    (viewport[3] - 2 * (y - viewport[1])) / deltay, 0);
+    glScalef(viewport[2] / deltax, viewport[3] / deltay, 1.0);
+}
+
 
 s32 org_lwjgl_opengl_GL11_glPushMatrix_IV(Runtime *runtime, JClass *clazz) {
   glPushMatrix();
@@ -35,6 +106,7 @@ s32 org_lwjgl_opengl_GL11_glEnd_V0(Runtime *runtime, JClass *clazz) {
 }
 
 s32 org_lwjgl_opengl_GL11_glEnable_IV(Runtime *runtime, JClass *clazz) {
+  printf("glEnablke\n");
   RuntimeStack *stack = runtime->stack;
   s32 arg1 = localvar_getInt(runtime->localvar, 0);
   glEnable(arg1);

@@ -10,6 +10,9 @@
 #include "jvm_util.h"
 #include "../utils/miniz_wrapper.h"
 
+#ifdef __vita__
+#define gai_strerror strerror
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -1700,8 +1703,13 @@ s32 org_mini_fs_InnerFile_listWinDrivers(Runtime *runtime, JClass *clazz) {
 }
 
 s32 org_mini_fs_InnerFile_getcwd(Runtime *runtime, JClass *clazz) {
+#ifdef __vita__
+    push_ref(runtime->stack, NULL);
+    return 0;
+#else
     ByteBuf *platformPath = bytebuf_create(1024);
 
+    
     __refer ret = getcwd(platformPath->buf, platformPath->_alloc_size);
     if (ret) {
         Utf8String *filepath = utf8_create();
@@ -1721,9 +1729,14 @@ s32 org_mini_fs_InnerFile_getcwd(Runtime *runtime, JClass *clazz) {
     jvm_printf("org_mini_fs_InnerFile_getcwd  \n");
 #endif
     return 0;
+#endif
 }
 
 s32 org_mini_fs_InnerFile_chmod(Runtime *runtime, JClass *clazz) {
+#ifdef __vita__
+    push_int(runtime->stack, -1);
+    return 0;
+#else
     Instance *path_arr = localvar_getRefer(runtime->localvar, 0);
     s32 mode = localvar_getInt(runtime->localvar, 1);
     if (path_arr) {
@@ -1744,6 +1757,7 @@ s32 org_mini_fs_InnerFile_chmod(Runtime *runtime, JClass *clazz) {
     jvm_printf("org_mini_fs_InnerFile_fullpath  \n");
 #endif
     return 0;
+#endif
 }
 
 s32 org_mini_fs_InnerFile_rename0(Runtime *runtime, JClass *clazz) {

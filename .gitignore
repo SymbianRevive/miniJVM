@@ -18,3 +18,17 @@ cmake-build-release
 /desktop/awtk
 /desktop/awtk_gui
 /binary/tmp
+CMakeFiles
+CMakeCache.txt
+*.sig
+*.bin
+*.a
+*.suprx
+*.cmake
+*.self
+*.velf
+*.vpk
+*.out
+*.sfo
+mini_jvm
+minijvm/c/Makefile

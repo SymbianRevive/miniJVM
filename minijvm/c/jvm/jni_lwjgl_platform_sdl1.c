@@ -2,7 +2,10 @@
 
 #include "glut_keys.h"
 #include "jvm_util.h"
-
+#ifdef __VITA__
+#define __psp2__
+#include <GLES2/gl2.h>
+#endif
 #include <GL/gl.h>
 #include <GL/glext.h>
 #include <SDL/SDL.h>
@@ -305,13 +308,15 @@ int g_wnd = -1;
 SDL_Surface *screen;
 
 static s32 org_lwjgl_input_Display_create_V0(Runtime *runtime, JClass *clazz) {
-  SDL_Init(SDL_INIT_VIDEO);
+  SDL_Init(SDL_INIT_TIMER);
+#ifndef __vita__
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
+  
   Utf8String *cn = utf8_create_c("org/lwjgl/opengl/Display");
   Utf8String *fn = utf8_create_c("current_mode");
   Utf8String *ft = utf8_create_c("Lorg/lwjgl/opengl/DisplayMode;");
@@ -329,8 +334,9 @@ static s32 org_lwjgl_input_Display_create_V0(Runtime *runtime, JClass *clazz) {
       dm, "org/lwjgl/opengl/DisplayMode", "width", "I", runtime));
   const s32 height = getFieldInt(getFieldPtr_byName_c(
       dm, "org/lwjgl/opengl/DisplayMode", "height", "I", runtime));
-  screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
 
+  screen = SDL_SetVideoMode(width, height, 0, SDL_OPENGL);
+#endif
   return 0;
 }
 
@@ -339,8 +345,12 @@ static s32 org_lwjgl_input_Display_create_V0(Runtime *runtime, JClass *clazz) {
 // ------------------------
 
 static s32 org_lwjgl_input_Display_update_V0(Runtime *runtime, JClass *clazz) {
+#ifndef __vita__
   SDL_GL_SwapBuffers();
-
+#else
+  swap_vita(); //defined in main.c
+#endif
+  
   SDL_Event ev;
   SDL_PumpEvents();
 #ifndef __EMSCRIPTEN__

@@ -3045,13 +3045,13 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             cmr = class_get_constant_method_ref(clazz, *((u16 *) (ip + 1)));
 
-                            ins = (sp - 1 - cmr->para_slots)->rvalue;
+                            ins = (sp - 1 - cmr->para_slots)->rvalue;/*
                             int nullfd = open("/dev/random", O_WRONLY);
                             if (ins && write(nullfd, ins, sizeof(Instance)) < 0) {
                               jvm_printf("CORRUPTED INSTANCE DETECTED!\n");
                               abort();
                             }
-                            close(nullfd);
+                            close(nullfd);*/
                             if (!ins) {
                                 goto label_null_throw;
                             } else {
@@ -3930,12 +3930,13 @@ s32 execute_method_impl(MethodInfo *method, Runtime *pruntime) {
 
                             cmr = class_get_constant_method_ref(clazz, *((u16 *) (ip + 1)));
                             ins = (sp - 1 - cmr->para_slots)->rvalue;
+                            /*
                             int nullfd = open("/dev/random", O_WRONLY);
                             if (ins && write(nullfd, ins, sizeof(Instance)) < 0) {
                               jvm_printf("CORRUPTED INSTANCE DETECTED!\n");
                               abort();
                             }
-                            close(nullfd);
+                            close(nullfd);*/
                             if (!ins) {
                                 goto label_null_throw;
                             } else {

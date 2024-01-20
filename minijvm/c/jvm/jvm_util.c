@@ -769,6 +769,12 @@ s32 sys_properties_load(MiniJVM *jvm) {
     sys_properties_set_c(jvm, "file.separator", "/");
     sys_properties_set_c(jvm, "line.separator", "\n");
     sys_properties_set_c(jvm, "XstartOnFirstThread", "1");
+#elif __vita__
+    sys_properties_set_c(jvm, "os.name", "Linux");
+    sys_properties_set_c(jvm, "path.separator", ";");
+    sys_properties_set_c(jvm, "file.separator", "/");
+    sys_properties_set_c(jvm, "line.separator", "\n");
+    sys_properties_set_c(jvm, "user.home", "ux0:data/");
 #elif __JVM_OS_LINUX__
     sys_properties_set_c(jvm, "os.name", "Linux");
     sys_properties_set_c(jvm, "path.separator", ":");
@@ -1992,7 +1998,9 @@ ByteBuf *load_file_from_classpath(PeerClassLoader *cloader, Utf8String *path) {
     s32 i, iret;
     for (i = 0; i < cloader->classpath->length; i++) {
         Utf8String *pClassPath = arraylist_get_value(cloader->classpath, i);
+        // printf("a\n");
         if (isDir(pClassPath)) { //form file
+            // printf("c\n");
             Utf8String *filepath = utf8_create_copy(pClassPath);
             utf8_pushback(filepath, '/');
             utf8_append(filepath, path);
@@ -2006,6 +2014,7 @@ ByteBuf *load_file_from_classpath(PeerClassLoader *cloader, Utf8String *path) {
                 bytebuf = NULL;
             }
         } else { //from jar
+            // printf("b\n");
             bytebuf = bytebuf_create(16);
             iret = zip_loadfile(utf8_cstr(pClassPath), utf8_cstr(path), bytebuf);
             //回收

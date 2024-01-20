@@ -144,7 +144,7 @@ void classloader_add_jar_path(PeerClassLoader *class_loader, Utf8String *jar_pat
         }
         c8 ch = utf8_char_at(jar_path, i++);
         if (i == jar_path->length) {
-            if (ch != ';' && ch != ':')utf8_insert(tmp, tmp->length, ch);
+            if (ch != ';' && ch != ';')utf8_insert(tmp, tmp->length, ch);
             ch = PATHSEPARATOR;
         }
         if (ch == PATHSEPARATOR) {
@@ -316,6 +316,7 @@ s32 jvm_init(MiniJVM *jvm, c8 *p_bootclasspath, c8 *p_classpath) {
     classloaders_add(jvm, jvm->boot_classloader);
 
     //装入系统属性
+    
     sys_properties_load(jvm);
     sys_properties_set_c(jvm, "java.class.path", p_classpath);
     sys_properties_set_c(jvm, "sun.boot.class.path", p_bootclasspath);
