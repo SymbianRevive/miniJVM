@@ -28,6 +28,7 @@ freely, subject to the following restrictions:
  */
 
 #include "tinycthread.h"
+#include <pthread.h>
 #include <stdlib.h>
 
 /* Platform specific includes */
@@ -347,10 +348,14 @@ int thrd_create(thrd_t *thr, thrd_start_t func, void *arg) {
 #if defined(_TTHREAD_WIN32_)
     *thr = (HANDLE) _beginthreadex(NULL, 0, _thrd_wrapper_function, (void *) ti, 0, NULL);
 #elif defined(_TTHREAD_POSIX_)
-    if(pthread_create(thr, NULL, _thrd_wrapper_function, (void *)ti) != 0)
+    pthread_attr_t at;
+    pthread_attr_init(&at);
+    pthread_attr_setstacksize(&at, 0x200000);
+    if(pthread_create(thr, &at, _thrd_wrapper_function, (void *)ti) != 0)
     {
       *thr = 0;
     }
+    pthread_attr_destroy(&at);
 #endif
 
     /* Did we fail to create the thread? */

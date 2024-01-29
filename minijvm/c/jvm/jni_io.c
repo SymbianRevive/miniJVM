@@ -44,7 +44,7 @@ extern "C" {
 #else
 
 #include <sys/types.h>
-//#include <sys/socket.h>
+#include <sys/socket.h>
 #include <sys/select.h>
 #include <unistd.h>
 #include <netinet/in.h>
@@ -154,8 +154,10 @@ char *inet_ntop(int af, const void *src, char *dst, socklen_t size) {
     switch (af) {
         case AF_INET:
             return (inet_ntop4((const unsigned char *) src, dst, size));
+#ifndef __psp__
         case AF_INET6:
             return (inet_ntop6((const unsigned char *) src, dst, size));
+#endif
         default:
             return (NULL);
     }
@@ -312,8 +314,10 @@ int inet_pton(int af, const char *src, void *dst) {
     switch (af) {
         case AF_INET:
             return (inet_pton4(src, (unsigned char *) dst));
+#ifndef __psp__
         case AF_INET6:
             return (inet_pton6(src, (unsigned char *) dst));
+#endif
         default:
             return (-1);
     }
@@ -654,6 +658,9 @@ s32 sock_get_option(VmSock *vmsock, s32 opType) {
 
 
 s32 host_2_ip(c8 *hostname, char *buf, s32 buflen) {
+#ifdef __psp__
+    return -1;
+#else
 #if __JVM_OS_VS__ || __JVM_OS_MINGW__
     WSADATA wsaData;
     WSAStartup(MAKEWORD(1, 1), &wsaData);
@@ -683,10 +690,12 @@ s32 host_2_ip(c8 *hostname, char *buf, s32 buflen) {
                 ipv4 = (struct sockaddr_in *) rp->ai_addr;
                 inet_ntop(rp->ai_family, &ipv4->sin_addr, buf, buflen);
                 break;
+#ifndef __psp__
             case AF_INET6:
                 ipv6 = (struct sockaddr_in6 *) rp->ai_addr;
                 inet_ntop(rp->ai_family, &ipv6->sin6_addr, buf, buflen);
                 break;
+#endif
         }
 
         //printf("[IPv%d]%s\n", rp->ai_family == AF_INET ? 4 : 6, buf);
@@ -695,6 +704,7 @@ s32 host_2_ip(c8 *hostname, char *buf, s32 buflen) {
     /* No longer needed */
     freeaddrinfo(result);
     return 0;
+#endif
 }
 
 
@@ -999,6 +1009,10 @@ s32 org_mini_net_SocketNative_getOption0(Runtime *runtime, JClass *clazz) {
 
 
 s32 org_mini_net_SocketNative_getSockAddr(Runtime *runtime, JClass *clazz) {
+#ifdef __psp__
+    push_ref(runtime->stack, NULL);
+    return 0;
+#else
     Instance *vmarr = localvar_getRefer(runtime->localvar, 0);
     s32 mode = localvar_getInt(runtime->localvar, 1);
     if (vmarr) {
@@ -1013,17 +1027,20 @@ s32 org_mini_net_SocketNative_getSockAddr(Runtime *runtime, JClass *clazz) {
 
         struct sockaddr_in *ipv4 = NULL;
         struct sockaddr_in6 *ipv6 = NULL;
-        char ipAddr[INET6_ADDRSTRLEN];//保存点分十进制的地址
+        char ipAddr[46];//保存点分十进制的地址
         int port = -1;
         if (sock.ss_family == AF_INET) {// IPv4 address
             ipv4 = ((struct sockaddr_in *) &sock);
             port = ipv4->sin_port;
             inet_ntop(AF_INET, &ipv4->sin_addr, ipAddr, sizeof(ipAddr));
-        } else {//IPv6 address
+        }
+#ifndef __psp__
+        else {//IPv6 address
             ipv6 = ((struct sockaddr_in6 *) &sock);
             port = ipv6->sin6_port;
             inet_ntop(AF_INET6, &ipv6->sin6_addr, ipAddr, sizeof(ipAddr));
         }
+#endif
 
         Utf8String *ustr = utf8_create();
         utf8_append_c(ustr, ipAddr);
@@ -1040,6 +1057,7 @@ s32 org_mini_net_SocketNative_getSockAddr(Runtime *runtime, JClass *clazz) {
     jvm_printf("org_mini_net_SocketNative_getSockAddr  \n");
 #endif
     return 0;
+#endif
 }
 
 s32 org_mini_net_SocketNative_host2ip(Runtime *runtime, JClass *clazz) {

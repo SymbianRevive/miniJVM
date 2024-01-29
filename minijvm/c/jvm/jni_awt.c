@@ -1,6 +1,22 @@
 #include "jvm.h"
 #include "jvm_util.h"
 
+#define STBI_ASSERT(x) if (!(x)) { jvm_printf("oops assert triggered on => " #x); abort(); }
+
+void *track_malloc(size_t sz) {
+    void *m = malloc(sz);
+    jvm_printf("%s(%d): %p\n", __func__, sz, m);
+    return m;
+}
+void *track_realloc(void *p, size_t newsz) {
+    void *m = realloc(p, newsz);
+    jvm_printf("%s(%p, %d): %p\n", __func__, p, newsz, m);
+    return m;
+}
+
+#define STBI_MALLOC(sz) track_malloc(sz)
+#define STBI_REALLOC(p, newsz) track_realloc(p, newsz)
+#define STBI_FREE(p) free(p)
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
@@ -8,10 +24,18 @@ static s32 javax_imageio_ImageIO_readInternal_V0(Runtime *runtime,
                                                  JClass *clazz) {
   Instance *iAry = localvar_getRefer(runtime->localvar, 0);
   int x, y, comp;
+  if (!iAry->arr_length) {
+    jvm_printf("image was null???\n");
+    push_ref(runtime->stack, NULL);
+    return 0;
+  }
+  jvm_printf("image length=%d\n", iAry->arr_length);
   u8 *bytes = stbi_load_from_memory((u8 *)iAry->arr_body, iAry->arr_length, &x,
                                     &y, &comp, 4);
   if (x == 0 || y == 0 || !bytes) {
-    abort();
+    jvm_printf("result was null???\n");
+    push_ref(runtime->stack, NULL);
+    return 0;
   }
   Instance *rgb = jarray_create_by_type_index(runtime, x * y, DATATYPE_INT);
 
@@ -30,7 +54,9 @@ static s32 javax_imageio_ImageIO_readInternal_V0(Runtime *runtime,
       rgb->arr_body[i*4 + 0] = bytes[i*4 + 2];
     }
   } else {
-    abort();
+    jvm_printf("wrong comp???\n");
+    push_ref(runtime->stack, NULL);
+    return 0;
   }
   stbi_image_free(bytes);
 

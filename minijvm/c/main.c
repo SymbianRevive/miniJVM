@@ -16,6 +16,7 @@
 #include "jvm/jvm_util.h"
 #include "jvm/jvm.h"
 #include "jvm/garbage.h"
+#include "utils/arraylist.h"
 
 #ifdef __vita__
 #define __psp2__
@@ -26,124 +27,92 @@
 #include <EGL/egl.h>
 
 
-int _newlib_heap_size_user   = 100 * 1024 * 1024;
-unsigned int sceLibcHeapSize = 50 * 1024 * 1024;
+int _newlib_heap_size_user   = 192 * 1024 * 1024;
+unsigned int sceLibcHeapSize = 10 * 1024 * 1024;
 
 EGLDisplay display;
 EGLContext context;
 EGLSurface surface;
 
-static void getFBSize(int *width, int *height)
-{
-    *width = 960;
-    *height = 544;
-}
 void init_vita() {
     //stolen code?!
     Psp2NativeWindow window;
 
-
-
-	EGLint width;
-	EGLint height;
     static const EGLint attributeList[] = {
-		EGL_RED_SIZE, 8,
-		EGL_GREEN_SIZE, 8,
-		EGL_BLUE_SIZE, 8,
-		EGL_ALPHA_SIZE, 8,
-		EGL_DEPTH_SIZE, 8,
-		EGL_STENCIL_SIZE, 8,
-		EGL_RENDERABLE_TYPE, EGL_OPENGL_ES2_BIT,
-		EGL_NONE
-	};
+        EGL_BUFFER_SIZE, EGL_DONT_CARE,
+        EGL_RED_SIZE, 8,
+        EGL_GREEN_SIZE, 8,
+        EGL_BLUE_SIZE, 8,
+        EGL_ALPHA_SIZE, 8,
+        EGL_DEPTH_SIZE, 8,
+        EGL_STENCIL_SIZE, 8,
+        EGL_NONE
+    };
 
-	static const EGLint contextAttributeList[] = {
-		EGL_CONTEXT_CLIENT_VERSION, 2,
-		EGL_NONE
-	};
+    static const EGLint contextAttributeList[] = { EGL_NONE };
 
-	EGLConfig config = NULL;
-	EGLint numConfigs = 0;
+    EGLConfig config = NULL;
+    EGLint numConfigs = 0;
     PVRSRV_PSP2_APPHINT hint;
     sceKernelLoadStartModule("vs0:sys/external/libfios2.suprx", 0, NULL, 0, NULL, NULL);
     sceKernelLoadStartModule("vs0:sys/external/libc.suprx", 0, NULL, 0, NULL, NULL);
-    
+
     sceKernelLoadStartModule("app0:module/libGL.suprx", 0, NULL, 0, NULL, NULL);
 
     sceKernelLoadStartModule("app0:module/libgpu_es4_ext.suprx", 0, NULL, 0, NULL, NULL);
     sceKernelLoadStartModule("app0:module/libIMGEGL.suprx", 0, NULL, 0, NULL, NULL);
 
     PVRSRVInitializeAppHint(&hint);
-    
-    
-    // hint.szGLES1 = "app0:module/libGLESv1_CM.suprx";
-    // hint.szGLES2 = "app0:module/libGLESv2.suprx";
-    // hint.szWindowSystem = "app0:module/libpvrPSP2_WSEGL.suprx";
     snprintf(hint.szGLES1, 256, "%s/%s", "app0:module", "libGLESv1_CM.suprx");
-    snprintf(hint.szGLES2, 256, "%s/%s", "app0:module", "libGLESv2.suprx");
     snprintf(hint.szWindowSystem, 256, "%s/%s", "app0:module", "libpvrPSP2_WSEGL.suprx");
+    hint.ui32SwTexOpCleanupDelay = 16000;
     PVRSRVCreateVirtualAppHint(&hint);
-    
+
     display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
+    if (!display) {
+        jvm_printf("EGL: No Display\n");
+        abort();
+    }
 
+    eglInitialize(display, NULL, NULL);
 
-	// Initialize the display
-	eglInitialize(display, NULL, NULL);
+    eglChooseConfig(display, attributeList, &config, 1, &numConfigs);
+    if (numConfigs == 0) {
+        jvm_printf("EGL: No Configs\n");
+        abort();
+    }
 
-	// Get avaiable EGL framebuffer configurations
-	eglChooseConfig(display, attributeList, &config, 1, &numConfigs);
+    window.type = PSP2_DRAWABLE_TYPE_WINDOW;
+    window.numFlipBuffers = 2;
+    window.flipChainThrdAffinity = 0x20000;
+    window.windowSize = PSP2_WINDOW_960X544;
 
+    surface = eglCreateWindowSurface(display, config, &window, NULL);
+    if (!surface) {
+        jvm_printf("EGL: No Surface\n");
+        abort();
+    }
 
-	// Create an EGL window surface
-	window.type = PSP2_DRAWABLE_TYPE_WINDOW;
-	window.numFlipBuffers = 2;
-	window.flipChainThrdAffinity = 0x20000;
-	window.windowSize = PSP2_WINDOW_960X544;
+    eglSurfaceAttrib(display, surface, EGL_SWAP_BEHAVIOR, EGL_BUFFER_DESTROYED);
 
-	// Create a window surface
-	surface = eglCreateWindowSurface(display, config, &window, NULL);
-
-
-	// Create an EGL rendering context
-	context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttributeList);
-
-
-	// Connect the context to the surface
-	eglMakeCurrent(display, surface, surface, context);
-
-	eglQuerySurface(display, surface, EGL_WIDTH, &width);
-	eglQuerySurface(display, surface, EGL_HEIGHT, &height);
-    
-    // sceKernelLoadStartModule("app0:module/libGLESv2.suprx", 0, NULL, 0, NULL, NULL);
-    // sceKernelLoadStartModule("app0:module/libGLESv1_CM.suprx", 0, NULL, 0, NULL, NULL);
-    
-    printf("init pvr\n");
-    set_getprocaddress((void *(*)(const char *))eglGetProcAddress);
-    printf("init getproc\n");
-    set_getmainfbsize(getFBSize);
-    printf("init fb\n");
-    gl4es_setenv("LIBGL_NOTEXRECT", "1", 1);
-    printf("init extarct\n");
-    gl4es_setenv("LIBGL_", "1", 1);
-    printf("init glver\n");
-    initialize_gl4es();
-    printf("init gl4es\n");
-}
-
-void swap_vita() {
-    eglSwapBuffers(display, surface);
+    context = eglCreateContext(display, config, EGL_NO_CONTEXT, contextAttributeList);
+    if (!context) {
+        jvm_printf("EGL: No Context\n");
+        abort();
+    }
 }
 #endif
+
 /*
  *
  */
 int main(int argc, char **argv) {
-
-    c8 *bootclasspath = "app0:minijvm_rt.jar";
-    c8 *classpath = "app0:rd-132211-launcher_backup.jar";
-    c8 *main_name = "com.mojang.rubydung.Rubydung";
+    c8 *bootclasspath = "app0:/minijvm_rt.jar";
+    c8 *classpath = "app0:/rd.jar";
+    c8 *main_name = "java.applet.Applet";
     s32 main_set = 0;
-    ArrayList *java_para = arraylist_create(0);
+    ArrayList *java_para = arraylist_create(1);
+    arraylist_push_back(java_para, "com.mojang.minecraft.MinecraftApplet");
     s32 jdwp = 0;
     s64 maxheap = MAX_HEAP_SIZE_DEFAULT;
     s32 ret;
@@ -266,7 +235,7 @@ int main(int argc, char **argv) {
 #else
     init_vita();
 #endif
-    
+
     MiniJVM *jvm = jvm_create();
     printf("create jvm\n");
     if (jvm != NULL) {

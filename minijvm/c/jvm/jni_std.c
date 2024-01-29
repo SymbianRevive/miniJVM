@@ -9,7 +9,9 @@
 
 #if  defined(__JVM_OS_MAC__) || defined(__JVM_OS_LINUX__)
 
+#ifndef __psp__
 #include <dlfcn.h>
+#endif
 
 #else
 
@@ -930,6 +932,7 @@ s32 java_lang_System_currentTimeMillis(Runtime *runtime, JClass *clazz) {
 typedef void (*jni_fun)(__refer);
 
 s32 java_lang_System_loadLibrary0(Runtime *runtime, JClass *clazz) {
+#ifndef __psp__
     Instance *name_arr = localvar_getRefer(runtime->localvar, 0);
     if (name_arr && name_arr->arr_length) {
         Utf8String *lab = utf8_create_c("java.library.path");
@@ -990,6 +993,7 @@ s32 java_lang_System_loadLibrary0(Runtime *runtime, JClass *clazz) {
 #if _JVM_DEBUG_LOG_LEVEL > 5
     invoke_deepth(runtime);
     jvm_printf("java_lang_System_loadLibrary0\n");
+#endif
 #endif
 
     return 0;

@@ -71,7 +71,7 @@ static SLJIT_INLINE void allocator_grab_lock(void)
 	&& !((defined SLJIT_PROT_EXECUTABLE_ALLOCATOR && SLJIT_PROT_EXECUTABLE_ALLOCATOR) \
 	|| (defined SLJIT_WX_EXECUTABLE_ALLOCATOR && SLJIT_WX_EXECUTABLE_ALLOCATOR)))
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__psp__)
 /* Provides mmap function. */
 #include <sys/types.h>
 #include <sys/mman.h>

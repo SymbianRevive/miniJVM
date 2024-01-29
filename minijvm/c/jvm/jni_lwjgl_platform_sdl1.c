@@ -2,9 +2,21 @@
 
 #include "glut_keys.h"
 #include "jvm_util.h"
-#ifdef __VITA__
+#ifdef __vita__
 #define __psp2__
-#include <GLES2/gl2.h>
+#include <gpu_es4/psp2_pvr_hint.h>
+#include <psp2/kernel/modulemgr.h>
+#include <gl4esinit.h>
+#include <EGL/egl.h>
+
+extern EGLDisplay display;
+extern EGLContext context;
+extern EGLSurface surface;
+
+static void getFBSize(int *width, int *height) {
+  *width = 960;
+  *height = 544;
+}
 #endif
 #include <GL/gl.h>
 #include <GL/glext.h>
@@ -35,6 +47,10 @@ static const short sdl2lwjglb[] = {
 static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
 
+#if 0
+  push_int(stack, 0);
+  return 0;
+#else
   g_eventButton = -1;
   g_eventDWheel = 0;
 
@@ -45,8 +61,9 @@ static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
   int res = SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_MOUSEMOTION, SDL_MOUSEBUTTONUP);
 #endif
   if (res < 0) {
-    printf("%s\n", SDL_GetError());
-    abort();
+    printf("[SDL Error] %s\n", SDL_GetError());
+    push_int(stack, 0);
+    return 0;
   }
   if (!res) {
     push_int(stack, 0);
@@ -77,11 +94,13 @@ static s32 org_lwjgl_input_Mouse_next_Z0(Runtime *runtime, JClass *clazz) {
     }
     break;
   default:
+    jvm_printf("%s: this should not happen\n", __func__);
     assert(0);
   }
 
   push_int(stack, 1);
   return 0;
+#endif
 }
 
 static s32 org_lwjgl_input_Mouse_getEventX_I0(Runtime *runtime, JClass *clazz) {
@@ -242,6 +261,11 @@ static s32 org_lwjgl_input_Keyboard_next_Z0(Runtime *runtime, JClass *clazz) {
 #else
   int res = SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_KEYDOWN, SDL_KEYUP);
 #endif
+  if (res < 0) {
+    printf("[SDL Error] %s\n", SDL_GetError());
+    push_int(stack, 0);
+    return 0;
+  }
   if (!res) {
     g_eventKey = -1;
     push_int(stack, 0);
@@ -254,6 +278,9 @@ static s32 org_lwjgl_input_Keyboard_next_Z0(Runtime *runtime, JClass *clazz) {
     g_eventKey = ev.key.keysym.sym;
     SPARSE_TOGGLE(g_sparseKeyStatusMap, g_eventKey);
     break;
+  default:
+    jvm_printf("%s: this should not happen\n", __func__);
+    assert(0);
   }
 
   push_int(stack, 1);
@@ -308,15 +335,35 @@ int g_wnd = -1;
 SDL_Surface *screen;
 
 static s32 org_lwjgl_input_Display_create_V0(Runtime *runtime, JClass *clazz) {
-  SDL_Init(SDL_INIT_TIMER);
-#ifndef __vita__
+#ifdef __vita__
+  if (eglMakeCurrent(display, surface, surface, context) != EGL_TRUE) {
+    int error = eglGetError();
+    jvm_printf("EGL MakeCurrent Error: 0x%04x\n", error);
+    abort();
+  }
+  set_getprocaddress((void *(*)(const char *))eglGetProcAddress);
+  set_getmainfbsize(getFBSize);
+  gl4es_setenv("LIBGL_LOGSHADERERROR", "1", 1);
+  gl4es_setenv("LIBGL_COMMENTS", "1", 1);
+  gl4es_setenv("LIBGL_NOTEXRECT", "1", 1);
+  gl4es_setenv("LIBGL_ES", "1", 1);
+  gl4es_setenv("LIBGL_GL", "11", 1);
+  initialize_gl4es();
+
+  int ret = SDL_Init(SDL_INIT_VIDEO);
+  jvm_printf("SDL_INIT_VIDEO = %d\n", ret);
+  if (ret) {
+    jvm_printf("SDL_INIT_VIDEO = %s\n", SDL_GetError());
+  }
+  glViewport(0, 0, 960, 544);
+#else
+  SDL_Init(SDL_INIT_VIDEO);
   SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-  
   Utf8String *cn = utf8_create_c("org/lwjgl/opengl/Display");
   Utf8String *fn = utf8_create_c("current_mode");
   Utf8String *ft = utf8_create_c("Lorg/lwjgl/opengl/DisplayMode;");
@@ -348,17 +395,24 @@ static s32 org_lwjgl_input_Display_update_V0(Runtime *runtime, JClass *clazz) {
 #ifndef __vita__
   SDL_GL_SwapBuffers();
 #else
-  swap_vita(); //defined in main.c
+  if (eglSwapBuffers(display, surface) != EGL_TRUE) {
+    jvm_printf("EGL Swap Error: 0x%04x\n", eglGetError());
+  }
 #endif
-  
+
   SDL_Event ev;
   SDL_PumpEvents();
+  int res = 0;
 #ifndef __EMSCRIPTEN__
-  while (SDL_PeepEvents(&ev, 1, SDL_GETEVENT,
-                        ~(SDL_KEYEVENTMASK | SDL_MOUSEEVENTMASK))) {
+  while ((res = SDL_PeepEvents(&ev, 1, SDL_GETEVENT,
+                               ~(SDL_KEYEVENTMASK | SDL_MOUSEEVENTMASK)))) {
 #else
-  while (SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_QUIT, SDL_USEREVENT)) {
+  while ((res = SDL_PeepEvents(&ev, 1, SDL_GETEVENT, SDL_QUIT, SDL_USEREVENT))) {
 #endif
+    if (res < 0) {
+      jvm_printf("[SDL Error] %s\n", SDL_GetError());
+      return 0;
+    }
     if (ev.type == SDL_QUIT) {
       push_int(runtime->stack, 0);
       execute_method(find_methodInfo_by_name_c("java.lang.System", "exit",

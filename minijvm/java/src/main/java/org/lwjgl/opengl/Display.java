@@ -52,7 +52,7 @@ import java.nio.FloatBuffer;
 public final class Display {
 
 	/** The initial display mode */
-	private static DisplayMode initial_mode = new DisplayMode(800, 600);
+	private static DisplayMode initial_mode = new DisplayMode(960, 544);
 
 
 	/** The current display mode, if created */
@@ -71,10 +71,10 @@ public final class Display {
 	private static int y = -1;
 
 	/** the width of the Display window */
-	private static int width = 800;
+	private static int width = 960;
 
 	/** the height of the Display window */
-	private static int height = 600;
+	private static int height = 544;
 
 	/** Title of the window (never null) */
 	private static String title = "Game";
@@ -152,10 +152,11 @@ public final class Display {
 	 * @throws LWJGLException if the display mode could not be set
 	 */
 	public static void setDisplayMode(DisplayMode mode) {
-        current_mode = mode;
+        //current_mode = mode;
+        current_mode = initial_mode;
 
-        width = current_mode.getWidth();
-        height = current_mode.getHeight();
+        //width = current_mode.getWidth();
+        //height = current_mode.getHeight();
 	}
 
 	/**

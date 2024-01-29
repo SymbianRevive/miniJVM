@@ -24,7 +24,7 @@ public class FileSystemPosix extends FileSystemImpl {
         if (path.length() == 0) {
             return false;
         }
-        if (path.charAt(0) == getSeparator()) {
+        if (path.charAt(0) == getSeparator() || path.startsWith("ux0:") || path.startsWith("app0:")) {
             return true;
         }
         return false;

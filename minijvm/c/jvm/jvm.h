@@ -37,7 +37,7 @@ extern "C" {
 
 #define GARBAGE_OVERLOAD_DEFAULT 90  // overload of max heap size ,will active garbage collection
 #define GARBAGE_PERIOD_MS_DEFAULT 10 * 60 * 1000
-#define MAX_HEAP_SIZE_DEFAULT  200 * 1024 * 1024
+#define MAX_HEAP_SIZE_DEFAULT  128 * 1024 * 1024
 #define MAX_STACK_SIZE_DEFAULT 4096
 
 

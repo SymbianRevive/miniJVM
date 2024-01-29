@@ -3,13 +3,13 @@
 
 #ifdef __VITA__
 #define __psp2__
-#include <GLES2/gl2.h>
 #include "mipmaps.h"
 #endif
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <math.h>
 
+#ifdef __VITA__
 static void __gluMakeIdentityd(GLdouble m[16])
 {
     m[0+4*0] = 1; m[0+4*1] = 0; m[0+4*2] = 0; m[0+4*3] = 0;
@@ -73,6 +73,7 @@ gluPickMatrix(GLdouble x, GLdouble y, GLdouble deltax, GLdouble deltay,
 	    (viewport[3] - 2 * (y - viewport[1])) / deltay, 0);
     glScalef(viewport[2] / deltax, viewport[3] / deltay, 1.0);
 }
+#endif
 
 
 s32 org_lwjgl_opengl_GL11_glPushMatrix_IV(Runtime *runtime, JClass *clazz) {
@@ -106,7 +107,6 @@ s32 org_lwjgl_opengl_GL11_glEnd_V0(Runtime *runtime, JClass *clazz) {
 }
 
 s32 org_lwjgl_opengl_GL11_glEnable_IV(Runtime *runtime, JClass *clazz) {
-  printf("glEnablke\n");
   RuntimeStack *stack = runtime->stack;
   s32 arg1 = localvar_getInt(runtime->localvar, 0);
   glEnable(arg1);
@@ -249,6 +249,7 @@ s32 org_lwjgl_opengl_GL11_glCallLists_V1(Runtime *runtime, JClass *clazz) {
       getFieldPtr_byName_c(buffer, "java/nio/Buffer", "capacity", "I", runtime);
   s32 cap = getFieldInt(pCap);
   if (cap == 0) {
+    jvm_printf("cap == 0\n");
     abort();
   }
   c8 *pBuffer =
@@ -265,6 +266,7 @@ s32 org_lwjgl_opengl_GL11_glGenTextures_V1(Runtime *runtime, JClass *clazz) {
       getFieldPtr_byName_c(buffer, "java/nio/Buffer", "capacity", "I", runtime);
   s32 cap = getFieldInt(pCap);
   if (cap == 0) {
+    jvm_printf("cap == 0\n");
     abort();
   }
   c8 *pBuffer =
@@ -274,14 +276,14 @@ s32 org_lwjgl_opengl_GL11_glGenTextures_V1(Runtime *runtime, JClass *clazz) {
 
   return 0;
 }
-s32 org_lwjgl_opengl_GL11_glGenTextures_IV(Runtime *runtime, JClass *clazz) {
-  RuntimeStack *stack = runtime->stack;
-  s32 arg1 = localvar_getInt(runtime->localvar, 0);
-  u32 res;
-  glGenTextures(arg1, &res);
-  push_int(stack, res);
-  return 0;
-}
+// s32 org_lwjgl_opengl_GL11_glGenTextures_IV(Runtime *runtime, JClass *clazz) {
+//   RuntimeStack *stack = runtime->stack;
+//   s32 arg1 = localvar_getInt(runtime->localvar, 0);
+//   u32 res;
+//   glGenTextures(arg1, &res);
+//   push_int(stack, res);
+//   return 0;
+// }
 s32 org_lwjgl_opengl_GL11_glBindTexture_IV(Runtime *runtime, JClass *clazz) {
   RuntimeStack *stack = runtime->stack;
   s32 arg1 = localvar_getInt(runtime->localvar, 0);
@@ -440,6 +442,7 @@ s32 org_lwjgl_opengl_GL11_glGetInteger_IV(Runtime *runtime, JClass *clazz) {
       getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
   GLint *f1 = (GLint *)(intptr_t)getFieldLong(pBuffer);
   if (!f1) {
+    jvm_printf("cap == 0\n");
     abort();
     return 0;
   }
@@ -455,6 +458,7 @@ s32 org_lwjgl_opengl_GL11_glDrawElements_V2i(Runtime *runtime, JClass *clazz) {
       getFieldPtr_byName_c(buffer, "java/nio/Buffer", "capacity", "I", runtime);
   s32 cap = getFieldInt(pCap);
   if (cap == 0) {
+    jvm_printf("cap == 0\n");
     abort();
   }
   c8 *pBuffer =
@@ -472,6 +476,7 @@ s32 org_lwjgl_opengl_GL11_glGetFloat_IV(Runtime *runtime, JClass *clazz) {
       getFieldPtr_byName_c(buffer, "java/nio/Buffer", "address", "J", runtime);
   GLfloat *f1 = (GLfloat *)(intptr_t)getFieldLong(pBuffer);
   if (!f1) {
+    jvm_printf("cap == 0\n");
     abort();
     return 0;
   }
@@ -561,6 +566,7 @@ s32 org_lwjgl_opengl_GL11_glSelectBuffer_IV(Runtime *runtime, JClass *clazz) {
       getFieldPtr_byName_c(buffer, "java/nio/Buffer", "capacity", "I", runtime);
   s32 cap = getFieldInt(pCap);
   if (cap == 0) {
+    jvm_printf("cap == 0\n");
     abort();
   }
   c8 *pBuffer =

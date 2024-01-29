@@ -52,7 +52,11 @@ extern "C" {
 /* Uses user provided allocator to allocate the stack (see SLJIT_UTIL_STACK) */
 #ifndef SLJIT_UTIL_SIMPLE_STACK_ALLOCATION
 /* Disabled by default */
+#ifdef __psp__
+#define SLJIT_UTIL_SIMPLE_STACK_ALLOCATION 1
+#else
 #define SLJIT_UTIL_SIMPLE_STACK_ALLOCATION 0
+#endif
 #endif
 
 /* Single threaded application. Does not require any locks. */
@@ -79,7 +83,13 @@ extern "C" {
    SLJIT_EXEC_OFFSET and SLJIT_UPDATE_WX_FLAGS might also be needed. */
 #ifndef SLJIT_EXECUTABLE_ALLOCATOR
 /* Enabled by default. */
+#ifdef __psp__
+#define SLJIT_EXECUTABLE_ALLOCATOR 0
+#define SLJIT_MALLOC_EXEC(sz, v) malloc(sz)
+#define SLJIT_FREE_EXEC(p, v) free(p)
+#else
 #define SLJIT_EXECUTABLE_ALLOCATOR 1
+#endif
 
 /* When SLJIT_PROT_EXECUTABLE_ALLOCATOR is enabled SLJIT uses
    an allocator which does not set writable and executable
