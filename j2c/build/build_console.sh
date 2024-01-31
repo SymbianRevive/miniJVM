@@ -40,5 +40,5 @@ GENLIST=`find ${CSRC}/generted/c  -type f  -name "*.c" `
 
 ${GCC} -O3  -o app -I${CSRC}/generted/c -I${CSRC}/vm -I${CSRC}/vm/https/ -I${CSRC}/vm/https/mbedtls/include/ -lpthread -lm -lGL -lGLU -lglut -lSDL $VMLIST  ${GENLIST} ../app/platform/desktop/main.c
 
-
+# @echo VMLIST
 

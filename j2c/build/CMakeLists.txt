@@ -1,0 +1,46 @@
+cmake_minimum_required(VERSION 3.5)
+project(app)
+
+set(CMAKE_C_COMPILER gcc)
+set(JAVAC javac)
+set(JAR jar)
+
+# Set JAVA_HOME if needed
+# set(JAVA_HOME /Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/)
+
+function(build_jar JAR_NAME SRC_DIR DEST_DIR CLASSPATH)
+    file(REMOVE_RECURSE ${DEST_DIR}/${JAR_NAME})
+    file(MAKE_DIRECTORY ${DEST_DIR}/classes)
+    file(WRITE ${CMAKE_BINARY_DIR}/source.txt "")
+    file(GLOB_RECURSE JAVA_SOURCES "${SRC_DIR}/java/*.java")
+    foreach(JAVA_SOURCE ${JAVA_SOURCES})
+        file(APPEND ${CMAKE_BINARY_DIR}/source.txt "${JAVA_SOURCE}\n")
+    endforeach()
+    execute_process(COMMAND ${JAVA_HOME}/bin/${JAVAC} -cp ${CLASSPATH} -encoding "utf-8" -d ${DEST_DIR}/classes @${CMAKE_BINARY_DIR}/source.txt)
+    if(IS_DIRECTORY "${SRC_DIR}/resource")
+        file(COPY ${SRC_DIR}/resource DESTINATION ${DEST_DIR}/classes/)
+    endif()
+    execute_process(COMMAND ${JAVA_HOME}/bin/${JAR} cf ${JAR_NAME} -C ${DEST_DIR}/classes .)
+    file(REMOVE ${CMAKE_BINARY_DIR}/source.txt)
+    file(REMOVE_RECURSE ${DEST_DIR}/classes)
+    file(MAKE_DIRECTORY ${DEST_DIR})
+    file(RENAME ${JAR_NAME} ${DEST_DIR}/${JAR_NAME})
+endfunction()
+
+message("build tools/translator.jar")
+build_jar(translator.jar ../translator/src/main "tools" "." ".")
+
+if(NOT DEFINED ENV{JAVA_HOME})
+    message(FATAL_ERROR "JDK and JAVA_HOME environment variable must be set.")
+else()
+    message("JAVA_HOME=$ENV{JAVA_HOME}")
+    execute_process(COMMAND ${JAVA_HOME}/bin/java -cp tools/translator.jar com.ebsee.Main ../../minijvm/java/src/main/java/:../../test/minijvm_test/src/main/java/ ../app/generted/classes/ ../app/generted/c/)
+endif()
+
+set(CSRC "../app")
+file(GLOB VMLIST "${CSRC}/vm/*.c")
+file(GLOB GENLIST "${CSRC}/generted/c/*.c")
+
+add_executable(app ${CSRC}/platform/desktop/main.c ${VMLIST} ${GENLIST} ${CSRC}/vm/https/ssl_client.c)
+target_include_directories(app PRIVATE ${CSRC}/generted/c ${CSRC}/vm ${CSRC}/vm/https/ ${CSRC}/vm/https/mbedtls/include/)
+target_link_libraries(app PRIVATE pthread m GL GLU glut SDL mbedtls mbedx509 mbedcrypto)
