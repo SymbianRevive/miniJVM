@@ -4,7 +4,7 @@ echo "Requirement: jdk1.8 jar javac "
 GCC=gcc
 JAVAC=javac
 JAR=jar
-JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/
+#JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_171.jdk/Contents/Home/
 #JAVA_HOME=
 
 function build_jar(){
@@ -38,7 +38,7 @@ CSRC="../app"
 VMLIST=`find ${CSRC}/vm  -type f  -name "*.c" `
 GENLIST=`find ${CSRC}/generted/c  -type f  -name "*.c" `
 
-${GCC} -O3  -o app -I${CSRC}/generted/c -I${CSRC}/vm -I${CSRC}/vm/https/ -I${CSRC}/vm/https/mbedtls/include/ -lpthread -lm   $VMLIST  ${GENLIST} ../app/platform/desktop/main.c
+${GCC} -O3  -o app -I${CSRC}/generted/c -I${CSRC}/vm -I${CSRC}/vm/https/ -I${CSRC}/vm/https/mbedtls/include/ -lpthread -lm -lGL -lGLU -lglut -lSDL $VMLIST  ${GENLIST} ../app/platform/desktop/main.c
 
 
 
